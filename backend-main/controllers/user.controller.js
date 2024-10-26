@@ -23,14 +23,36 @@ exports.createUser = (req, res) => {
   // Gọi model để thêm người dùng vào cơ sở dữ liệu
   User.create(newUser, (err, data) => {
     if (err) {
-      res
-        .status(500)
-        .json({
-          message:
-            err.message || "Some error occurred while creating the user.",
-        });
+      res.status(500).json({
+        message: err.message || "Some error occurred while creating the user.",
+      });
     } else {
       res.status(201).json(data); // Trả về thông tin user vừa được tạo
+    }
+  });
+};
+
+exports.updateUser = (req, res) => {
+  const updatedUser = {
+    name: req.body.name || null,
+    email: req.body.email || null,
+    phone_number: req.body.phone_number || null,
+    password: req.body.password || null,
+  };
+
+  User.updateById(req.params.id, updatedUser, (err, data) => {
+    if (err) {
+      if (err.kind === "not_found") {
+        res
+          .status(404)
+          .json({ message: `Not found user with id ${req.params.id}` });
+      } else {
+        res
+          .status(500)
+          .json({ message: `Error updating user with id ${req.params.id}` });
+      }
+    } else {
+      res.status(200).json(data);
     }
   });
 };

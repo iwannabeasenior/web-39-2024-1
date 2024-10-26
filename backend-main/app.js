@@ -7,10 +7,11 @@ const bodyParser = require("body-parser");
 app.use(express.json()); // Parse các request có nội dung dạng JSON
 app.use(express.urlencoded({ extended: true })); // Parse các request có nội dung dạng URL-encoded
 app.use(bodyParser.json());
-// Kiểm tra kết nối MySQL với route thử nghiệm
 
+// Sử dụng route user
 app.use("/api", userRoutes);
 
+// Kiểm tra kết nối MySQL với route thử nghiệm
 app.get("/test-connection", (req, res) => {
   db.query("SELECT 1 + 1 AS solution", (err, results) => {
     if (err) {
@@ -27,7 +28,6 @@ app.get("/test-connection", (req, res) => {
 app.get("/", (req, res) => {
   res.json({ message: "Welcome to the application." });
 });
-
 
 // Khởi động server
 const PORT = process.env.PORT || 3000;
