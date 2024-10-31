@@ -6,15 +6,19 @@ POST http://localhost:3000/signup
 Content-Type: application/json
 
 {
-"role": "customer",
-"name": "John Doe",
-"address": "123 Main St, New York, NY",
-"bio": "A passionate customer and long-time user.",
-"gmail": "john.doe@gmail.com",
-"phone": "0901234567",
-"username": "johndoe",
-"password": "hashed_password_example1"
+    "role": "customer",
+    "name": "Bob Brown",
+    "address": "789 Oak St, Springfield",
+    "bio": "Avid traveler and coffee lover",
+    "email": "bob.brown@example.com",
+    "phone": "555-9012",
+    "username": "bobbrown",
+    "password": "bobssecurepwd",
+    "token": "token11223def"
 }
+
+
+
 ###
 
 POST http://localhost:3000/api/users/login

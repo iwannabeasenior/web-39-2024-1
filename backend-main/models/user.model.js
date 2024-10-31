@@ -24,7 +24,7 @@ const User = sequelize.define(
     bio: {
       type: DataTypes.TEXT,
     },
-    gmail: {
+    email: {
       type: DataTypes.STRING,
       unique: true,
     },
@@ -45,6 +45,7 @@ const User = sequelize.define(
     },
   },
   {
+    tableName: "User",
     timestamps: false,
   }
 );
