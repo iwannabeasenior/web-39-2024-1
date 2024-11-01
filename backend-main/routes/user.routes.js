@@ -1,19 +1,25 @@
 const express = require("express");
-const {
-  validateSignUpMiddleware,
-  checkUserExistsMiddleware,
-} = require("../middlewares/user.middleware.js");
-const { getAllUsers, signUp } = require("../controllers/user.controller.js");
+const userMiddleware = require("../middlewares/user.middleware.js");
+const userController = require("../controllers/user.controller.js");
 
 const router = express.Router();
 
-router.get("/", getAllUsers);
+router.get("/", userController.getAllUsers);
 
 router.post(
   "/signup",
-  validateSignUpMiddleware,
-  checkUserExistsMiddleware,
-  signUp
+  userMiddleware.validateSignUpSignUp,
+  userMiddleware.checkUserExistsSignUp,
+  userController.signUp
 );
 
+router.post("/login", userMiddleware.checkUserExistLogin, userController.login);
+
 module.exports = router;
+
+// {
+//   validateSignUpSignUp,
+//   checkUserExistsSignUp,
+//   checkUserExistLogin,
+// }
+// { getAllUsers, signUp }

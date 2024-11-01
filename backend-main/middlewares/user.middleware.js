@@ -1,7 +1,7 @@
 const { isUserExists } = require("../services/user.service");
 
-// Middleware kiểm tra tính hợp lệ của dữ liệu đầu vào
-const validateSignUpMiddleware = (req, res, next) => {
+// SignUp kiểm tra tính hợp lệ của dữ liệu đầu vào
+const validateSignUpSignUp = (req, res, next) => {
   const { role, name, address, bio, email, phone, username, password } =
     req.body;
 
@@ -30,8 +30,8 @@ const validateSignUpMiddleware = (req, res, next) => {
   next(); // Chuyển tiếp nếu dữ liệu hợp lệ
 };
 
-// Middleware kiểm tra xem người dùng đã tồn tại chưa
-const checkUserExistsMiddleware = async (req, res, next) => {
+// SignUp kiểm tra xem người dùng đã tồn tại chưa
+const checkUserExistsSignUp = async (req, res, next) => {
   try {
     const { email, phone, username } = req.body;
     const userExists = await isUserExists({ email, phone, username });
@@ -44,8 +44,29 @@ const checkUserExistsMiddleware = async (req, res, next) => {
       });
     }
     next();
-  } catch (err) {
-    console.log(err);
+  } catch (error) {
+    console.log(error);
+    res.json({
+      status: "FAILED",
+      message: "An error occurred while checking for existing user!",
+    });
+  }
+};
+// Kiểm tra người dùng muốn đăng nhập có tồn tại chưa
+const checkUserExistLogin = async (req, res, next) => {
+  try {
+    const { username } = req.body;
+    const userExists = await isUserExists({ username });
+    if (!userExists) {
+      return res.json({
+        status: "FAILED",
+        message: "User is not exist!",
+      });
+    }
+    console.log("ok");
+    next();
+  } catch (error) {
+    console.log(error);
     res.json({
       status: "FAILED",
       message: "An error occurred while checking for existing user!",
@@ -54,6 +75,7 @@ const checkUserExistsMiddleware = async (req, res, next) => {
 };
 
 module.exports = {
-  validateSignUpMiddleware,
-  checkUserExistsMiddleware,
+  validateSignUpSignUp,
+  checkUserExistsSignUp,
+  checkUserExistLogin,
 };

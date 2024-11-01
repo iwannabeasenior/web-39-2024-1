@@ -9,17 +9,17 @@ Content-Type: application/json
     "name": "David Thompson",
     "address": "456 Maple Rd, Bayside",
     "bio": "Cycling lover and mountain hiker",
-    "email": "david.thompson451161@example.com",
-    "phone": "5559012311415",
-    "username": "davidthompson141516",
+    "email": "dv11@example.com",
+    "phone": "5115",
+    "username": "dai116",
     "password": "davidsecure456"
 }
 
 ###
-POST http://localhost:3000/api/users/login
+POST http://localhost:3000/login
 Content-Type: application/json
 
 {
-    "username": "levanc",
-  "password": "mypassword"
+  "username": "davi11d16", 
+  "password": "davidsecure456"
 }
