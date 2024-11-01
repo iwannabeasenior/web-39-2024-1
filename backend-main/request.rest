@@ -1,26 +1,21 @@
 GET http://localhost:3000/
 
 ###
-# Tạo user mới
 POST http://localhost:3000/signup
 Content-Type: application/json
 
 {
     "role": "customer",
-    "name": "Bob Brown",
-    "address": "789 Oak St, Springfield",
-    "bio": "Avid traveler and coffee lover",
-    "email": "bob.brown@example.com",
-    "phone": "555-9012",
-    "username": "bobbrown",
-    "password": "bobssecurepwd",
-    "token": "token11223def"
+    "name": "David Thompson",
+    "address": "456 Maple Rd, Bayside",
+    "bio": "Cycling lover and mountain hiker",
+    "email": "david.thompson451161@example.com",
+    "phone": "5559012311415",
+    "username": "davidthompson141516",
+    "password": "davidsecure456"
 }
 
-
-
 ###
-
 POST http://localhost:3000/api/users/login
 Content-Type: application/json
 
