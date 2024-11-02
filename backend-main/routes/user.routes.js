@@ -1,6 +1,8 @@
 const express = require("express");
 const userMiddleware = require("../middlewares/user.middleware.js");
 const userController = require("../controllers/user.controller.js");
+const userUtil = require("../utils/user.util.js");
+const authMiddware = require("../middlewares/auth.middleware.js");
 
 const router = express.Router();
 
@@ -8,7 +10,7 @@ router.get("/", userController.getAllUsers);
 
 router.post(
   "/signup",
-  userMiddleware.validateSignUpSignUp,
+  userUtil.validateSignUpSignUp,
   userMiddleware.checkUserExistsSignUp,
   userController.signUp
 );
@@ -16,10 +18,3 @@ router.post(
 router.post("/login", userMiddleware.checkUserExistLogin, userController.login);
 
 module.exports = router;
-
-// {
-//   validateSignUpSignUp,
-//   checkUserExistsSignUp,
-//   checkUserExistLogin,
-// }
-// { getAllUsers, signUp }

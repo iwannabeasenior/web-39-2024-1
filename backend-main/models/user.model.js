@@ -17,7 +17,7 @@ const User = sequelize.define(
     phone: DataTypes.STRING,
     username: DataTypes.STRING,
     password: DataTypes.STRING,
-    token: DataTypes.STRING,
+    access_token: DataTypes.STRING,
   },
   {
     tableName: "User",

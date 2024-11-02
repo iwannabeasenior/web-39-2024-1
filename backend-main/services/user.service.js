@@ -39,7 +39,7 @@ async function createUser(userData) {
   const newUser = new User({
     ...userData,
     password: hashedPassword,
-    token: userData.password,
+    // refresh_token: userData.password,
   });
   // console.log({newUser});
   return newUser.save(); // newUser sẽ bao gồm tất cả các thuộc tính từ cơ sở dữ liệu
@@ -55,9 +55,24 @@ async function validatePassword(password, hashedPassword) {
   return await bcrypt.compare(password, hashedPassword);
 }
 
+async function updateAccessToken(username, accessToken) {
+  try {
+    const result = await User.update(
+      {
+        access_token: accessToken,
+      },
+      { where: { username: username } }
+    );
+  } catch (error) {
+    console.error("Error updating refresh token: ", error);
+    return false;
+  }
+}
+
 module.exports = {
   isUserExists,
   createUser,
   getUserByUserName,
   validatePassword,
+  updateAccessToken,
 };

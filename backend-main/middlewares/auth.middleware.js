@@ -1,16 +1,26 @@
 require("dotenv").config();
-
-const express = require('express');
+const express = require("express");
 const app = express();
-const jwt = require("jsonwebtoken");
+const authUtil = require("../utils/auth.util");
 
 app.use(express.json());
 
-// let refreshTokens = [];
+async function authenticateToken(req, res, next) {
+  const authHeader = req.headers["authorization"];
 
-// app.post("/token", (req, res) => {
-//   const refreshTokens = req.body.token;
-//   if (refreshTokens == null) return res.sendStatus(401);
-//   if (!refreshTokens.includes(refreshToken)) return res.sendStatus(403);
-//   jwt.verify(refreshTokens, process.env.RE)
-// });
+  const token = authHeader && authHeader.split(" ")[1];
+  if (!token) return res.status(401).send("Access token required!");
+
+  const user = await authUtil.verifyToken(
+    token,
+    process.env.ACCESS_TOKEN_SECRET
+  );
+  if (!user) {
+    return res.status(400).send("Access token canot be used!");
+  }
+  next();
+}
+
+module.exports = {
+  authenticateToken,
+};
