@@ -14,7 +14,6 @@ router.post(
   userMiddleware.checkUserExistsSignUp,
   userController.signUp
 );
-
 router.post("/login", userMiddleware.checkUserExistLogin, userController.login);
 
 module.exports = router;

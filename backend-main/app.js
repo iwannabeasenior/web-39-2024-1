@@ -11,6 +11,7 @@ app.use("/", userRoutes);
 
 // Kết nối database và chạy server
 const PORT = process.env.PORT || 3000;
+
 sequelize
   .sync()
   .then(() => {
