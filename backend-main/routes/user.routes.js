@@ -14,6 +14,9 @@ router.post(
   userMiddleware.checkUserExistsSignUp,
   userController.signUp
 );
+
 router.post("/login", userMiddleware.checkUserExistLogin, userController.login);
+
+router.post("/refresh-token", userController.refreshToken);
 
 module.exports = router;

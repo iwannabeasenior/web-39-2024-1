@@ -10,6 +10,7 @@ const generateToken = async (payload, secretSignature, tokenLife) => {
       algorithm: "HS256",
       expiresIn: tokenLife,
     });
+    // console.log(result);
     return result;
   } catch (error) {
     console.log(`Error in generate access token: ${error}`);
@@ -22,6 +23,8 @@ const verifyToken = async (token, secretSignature) => {
     const result = await verify(token, secretSignature, {
       algorithms: ["HS256"],
     });
+    // xem thời lượng của token
+    // console.log(result);
     return result;
   } catch (error) {
     return null;

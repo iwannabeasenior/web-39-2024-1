@@ -25,7 +25,7 @@ const signUp = async (req, res) => {
     phone,
     username,
     password,
-    access_token,
+    refresh_token,
   } = req.body;
 
   try {
@@ -38,7 +38,7 @@ const signUp = async (req, res) => {
       phone,
       username,
       password,
-      access_token,
+      refresh_token,
     });
     return res.json({
       status: "SUCCESS",
@@ -53,6 +53,48 @@ const signUp = async (req, res) => {
     });
   }
 };
+
+// const login = async (req, res) => {
+//   let { username, password } = req.body;
+//   try {
+//     const user = await userService.getUserByUserName(username);
+
+//     const isPasswordValid = await userService.validatePassword(
+//       password,
+//       user.password
+//     );
+//     if (!isPasswordValid) {
+//       return res.status(401).send("Password incorrect!");
+//     }
+
+//     const dataForAccessToken = {
+//       username: user.username,
+//       // Trong trường hợp người dùng đăng nhập cung cấp nhiều thông tin
+//       // hơn thì ta có thể đặt thêm những trường khác vào đây
+//     };
+
+//     const accessTokenLife = process.env.ACCESS_TOKEN_LIFE;
+//     const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET;
+
+//     const accessToken = await authUtil.generateToken(
+//       dataForAccessToken,
+//       accessTokenSecret,
+//       accessTokenLife
+//     );
+//     if (!accessToken) {
+//       return res.status(401).send("Login not successful!");
+//     }
+//     userService.updateAccessToken(user.username, accessToken);
+//     res.json({
+//       status: "SUCCESS",
+//       message: "Login successful!",
+//       token: `Bearer ${accessToken}`,
+//     });
+//   } catch (error) {
+//     console.log(error);
+//     return res.status(500).send("An error occurred during login!");
+//   }
+// };
 
 const login = async (req, res) => {
   let { username, password } = req.body;
@@ -69,8 +111,7 @@ const login = async (req, res) => {
 
     const dataForAccessToken = {
       username: user.username,
-      // Trong trường hợp người dùng đăng nhập cung cấp nhiều thông tin
-      // hơn thì ta có thể đặt thêm những trường khác vào đây
+      // Thêm các thông tin khác nếu cần
     };
 
     const accessTokenLife = process.env.ACCESS_TOKEN_LIFE;
@@ -84,11 +125,28 @@ const login = async (req, res) => {
     if (!accessToken) {
       return res.status(401).send("Login not successful!");
     }
-    userService.updateAccessToken(user.username, accessToken);
+
+    // **Tạo refresh token**
+    const refreshTokenLife = process.env.REFRESH_TOKEN_LIFE;
+    const refreshTokenSecret = process.env.REFRESH_TOKEN_SECRET;
+
+    const refreshToken = await authUtil.generateToken(
+      dataForAccessToken,
+      refreshTokenSecret,
+      refreshTokenLife
+    );
+    if (!refreshToken) {
+      return res.status(401).send("Login not successful!");
+    }
+
+    // **Lưu refresh token vào cơ sở dữ liệu**
+    await userService.updateRefreshToken(user.username, refreshToken);
+
     res.json({
       status: "SUCCESS",
       message: "Login successful!",
-      token: `Bearer ${accessToken}`,
+      accessToken: `Bearer ${accessToken}`,
+      refreshToken: `Bearer ${refreshToken}`,
     });
   } catch (error) {
     console.log(error);
@@ -96,4 +154,49 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { getAllUsers, signUp, login };
+const refreshToken = async (req, res) => {
+  // Lấy refresh token từ header
+  // const refreshToken = req.headers["authorization"];
+  const refreshToken = req.headers["authorization"]?.split(" ")[1];
+
+  // Kiểm tra nếu không có refresh token trong header
+  if (!refreshToken) {
+    return res.status(403).send("Refresh token is required!");
+  }
+
+  try {
+    // Lấy secret của refresh token từ biến môi trường
+    const refreshTokenSecret = process.env.REFRESH_TOKEN_SECRET;
+
+    // Xác minh refresh token
+    const decoded = await authUtil.verifyToken(
+      refreshToken,
+      refreshTokenSecret
+    );
+
+    // Tạo data cho access token mới
+    const dataForAccessToken = { username: decoded.username };
+
+    // Thiết lập thời gian sống và secret cho access token
+    const accessTokenLife = process.env.ACCESS_TOKEN_LIFE;
+    const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET;
+
+    // Sinh access token mới
+    const newAccessToken = await authUtil.generateToken(
+      dataForAccessToken,
+      accessTokenSecret,
+      accessTokenLife
+    );
+
+    // Gửi lại access token mới cho client
+    res.json({
+      status: "SUCCESS",
+      accessToken: `Bearer ${newAccessToken}`,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(403).send("Invalid refresh token!");
+  }
+};
+
+module.exports = { getAllUsers, signUp, login, refreshToken };

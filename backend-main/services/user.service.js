@@ -55,14 +55,15 @@ async function validatePassword(password, hashedPassword) {
   return await bcrypt.compare(password, hashedPassword);
 }
 
-async function updateAccessToken(username, accessToken) {
+async function updateRefreshToken(username, refreshToken) {
   try {
     const result = await User.update(
       {
-        access_token: accessToken,
+        refresh_token: refreshToken, // Lưu refresh token thay vì access token
       },
       { where: { username: username } }
     );
+    return result[0] > 0; // Trả về true nếu có ít nhất một hàng được cập nhật, ngược lại trả về false
   } catch (error) {
     console.error("Error updating refresh token: ", error);
     return false;
@@ -74,5 +75,5 @@ module.exports = {
   createUser,
   getUserByUserName,
   validatePassword,
-  updateAccessToken,
+  updateRefreshToken,
 };
