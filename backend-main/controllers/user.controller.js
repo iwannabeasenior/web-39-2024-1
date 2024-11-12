@@ -191,8 +191,9 @@ const refreshToken = async (req, res) => {
     );
 
     // Tạo data cho access token mới
-    const dataForAccessToken = { username: decoded.username };
+    const dataForAccessToken = { username: decoded.payload.username };
 
+    console.log(dataForAccessToken);
     // Thiết lập thời gian sống và secret cho access token
     const accessTokenLife = process.env.ACCESS_TOKEN_LIFE;
     const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET;
