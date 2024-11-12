@@ -19,4 +19,18 @@ router.post("/login", userMiddleware.checkUserExistLogin, userController.login);
 
 router.post("/refresh-token", userController.refreshToken);
 
+router.post("/logout", userController.logout);
+// Route to update user information (requires authentication)
+router.put(
+  "/update",
+  authMiddware.authenticateToken,
+  userController.updateUser
+);
+
+// Route to delete user (requires authentication)
+router.delete(
+  "/delete",
+  userController.deleteUser
+);
+
 module.exports = router;

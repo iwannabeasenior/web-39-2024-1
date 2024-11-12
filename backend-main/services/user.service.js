@@ -1,6 +1,6 @@
 const bcrypt = require("bcrypt");
 const { Op } = require("sequelize");
-const User = require("../models/user.model");
+const User = require("../models/user.model.js");
 
 async function isUserExists(criteria) {
   // Tạo mảng điều kiện `where` dựa trên các thuộc tính có trong `criteria`
@@ -46,8 +46,13 @@ async function createUser(userData) {
 }
 
 async function getUserByUserName(username) {
-  console.log(User.findOne({ where: { username: username } }));
+  // console.log(User.findOne({ where: { username: username } }));
   return await User.findOne({ where: { username: username } });
+}
+
+async function getUserByEmail(email) {
+  // console.log(User.findOne({ where: { email: email } }));
+  return await User.findOne({ where: { email: email } });
 }
 
 async function validatePassword(password, hashedPassword) {
@@ -55,7 +60,7 @@ async function validatePassword(password, hashedPassword) {
   return await bcrypt.compare(password, hashedPassword);
 }
 
-async function updateRefreshToken(username, refreshToken) {
+async function updateRefreshToken(username, accessToken) {
   try {
     const result = await User.update(
       {
@@ -70,10 +75,49 @@ async function updateRefreshToken(username, refreshToken) {
   }
 }
 
+const updateUser = async (username, updatedData) => {
+  // Tìm người dùng theo username
+  const user = await User.findOne({ where: { username } });
+
+  // Kiểm tra nếu người dùng tồn tại
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  // Cập nhật thông tin người dùng
+  Object.assign(user, updatedData);
+  await user.save(); // Lưu cập nhật vào cơ sở dữ liệu
+
+  return user;
+};
+
+const deleteUser = async (username) => {
+  try {
+    // Kiểm tra xem người dùng có tồn tại trong cơ sở dữ liệu không
+    const user = await User.findOne({ where: { username } });
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // Thực hiện xóa người dùng
+    await User.destroy({
+      where: { username },
+    });
+
+    console.log(`User ${username} deleted successfully!`);
+  } catch (error) {
+    console.log("Error deleting user: ", error);
+    throw new Error("An error occurred while deleting the user.");
+  }
+};
+
 module.exports = {
   isUserExists,
   createUser,
   getUserByUserName,
+  getUserByEmail,
   validatePassword,
   updateRefreshToken,
+  updateUser,
+  deleteUser,
 };

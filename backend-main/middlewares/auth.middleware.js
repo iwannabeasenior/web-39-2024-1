@@ -23,11 +23,9 @@ async function authenticateToken(req, res, next) {
     if (!user) {
       return res.status(403).send("Invalid or expired access token!");
     }
-
     // Gán thông tin người dùng vào request
     // Đặt payload vào req.user mà không cần nested "payload"
     req.user = user.payload ? user.payload : user;
-    // console.log(req.user);
     next(); // Chuyển sang middleware hoặc route tiếp theo
   } catch (error) {
     console.log(error);

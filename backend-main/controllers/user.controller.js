@@ -1,8 +1,6 @@
-const User = require("../models/user.model");
+const User = require("../models/user.model.js");
 // const bcrypt = require("bcrypt");
 require("dotenv").config();
-const { Op } = require("sequelize");
-const randToken = require("rand-token");
 const userService = require("../services/user.service");
 const authUtil = require("../utils/auth.util");
 
@@ -16,29 +14,20 @@ const getAllUsers = async (req, res) => {
 };
 
 const signUp = async (req, res) => {
-  let {
-    role,
-    name,
-    address,
-    bio,
-    email,
-    phone,
-    username,
-    password,
-    refresh_token,
-  } = req.body;
+  let { email, password, ...otherFields } = req.body;
+  // Kiểm tra password
+  if (!password) {
+    return res.json({
+      status: "FAILED",
+      message: "Password is required!",
+    });
+  }
 
   try {
     const newUser = await userService.createUser({
-      role,
-      name,
-      address,
-      bio,
       email,
-      phone,
-      username,
       password,
-      refresh_token,
+      ...otherFields, // Spread other fields if there are additional fields
     });
     return res.json({
       status: "SUCCESS",
@@ -54,52 +43,44 @@ const signUp = async (req, res) => {
   }
 };
 
-// const login = async (req, res) => {
-//   let { username, password } = req.body;
-//   try {
-//     const user = await userService.getUserByUserName(username);
+const updateUser = async (req, res) => {
+  try {
+    const { username, ...otherFields } = req.body; // Adjust as needed to accept relevant fields
 
-//     const isPasswordValid = await userService.validatePassword(
-//       password,
-//       user.password
-//     );
-//     if (!isPasswordValid) {
-//       return res.status(401).send("Password incorrect!");
-//     }
+    // console.log(req.username)
+    console.log(otherFields);
+    if (!otherFields || Object.keys(otherFields).length === 0) {
+      return res.status(400).send("No fields to update.");
+    }
 
-//     const dataForAccessToken = {
-//       username: user.username,
-//       // Trong trường hợp người dùng đăng nhập cung cấp nhiều thông tin
-//       // hơn thì ta có thể đặt thêm những trường khác vào đây
-//     };
+    // Update the user information in the database
+    const updatedUser = await userService.updateUser(req.user.username, {
+      ...otherFields, // Spread other fields if there are additional updates
+    });
 
-//     const accessTokenLife = process.env.ACCESS_TOKEN_LIFE;
-//     const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET;
+    if (!updatedUser) {
+      return res.status(404).send("User not found!");
+    }
 
-//     const accessToken = await authUtil.generateToken(
-//       dataForAccessToken,
-//       accessTokenSecret,
-//       accessTokenLife
-//     );
-//     if (!accessToken) {
-//       return res.status(401).send("Login not successful!");
-//     }
-//     userService.updateAccessToken(user.username, accessToken);
-//     res.json({
-//       status: "SUCCESS",
-//       message: "Login successful!",
-//       token: `Bearer ${accessToken}`,
-//     });
-//   } catch (error) {
-//     console.log(error);
-//     return res.status(500).send("An error occurred during login!");
-//   }
-// };
+    console.log(req.user);
+    console.log(req.body);
+    res.json({
+      status: "SUCCESS",
+      message: "User updated successfully!",
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send("An error occurred while updating the user!");
+  }
+};
 
 const login = async (req, res) => {
-  let { username, password } = req.body;
+  let { email, password } = req.body;
+  console.log(email);
   try {
-    const user = await userService.getUserByUserName(username);
+    const user = await userService.getUserByEmail(email);
+    // console.log(user);
 
     const isPasswordValid = await userService.validatePassword(
       password,
@@ -130,27 +111,62 @@ const login = async (req, res) => {
     const refreshTokenLife = process.env.REFRESH_TOKEN_LIFE;
     const refreshTokenSecret = process.env.REFRESH_TOKEN_SECRET;
 
-    const refreshToken = await authUtil.generateToken(
+    let refreshToken = await authUtil.generateToken(
       dataForAccessToken,
       refreshTokenSecret,
       refreshTokenLife
     );
+
+    if (!user.refresh_token) {
+      await userService.updateRefreshToken(user.username, refreshToken);
+    } else {
+      refreshToken = user.refresh_token;
+    }
+
     if (!refreshToken) {
       return res.status(401).send("Login not successful!");
     }
 
-    // **Lưu refresh token vào cơ sở dữ liệu**
-    await userService.updateRefreshToken(user.username, refreshToken);
-
     res.json({
       status: "SUCCESS",
       message: "Login successful!",
+      username: `${user.username}`,
       accessToken: `Bearer ${accessToken}`,
       refreshToken: `Bearer ${refreshToken}`,
     });
   } catch (error) {
     console.log(error);
     return res.status(500).send("An error occurred during login!");
+  }
+};
+
+const logout = async (req, res) => {
+  // Get the refresh token from the authorization header
+  const refreshToken = req.headers["authorization"]?.split(" ")[1];
+
+  // Check if the refresh token is provided
+  if (!refreshToken) {
+    return res.status(403).send("Refresh token is required for logout!");
+  }
+
+  try {
+    // Decode the refresh token to get the username
+    const refreshTokenSecret = process.env.REFRESH_TOKEN_SECRET;
+    const decoded = await authUtil.verifyToken(
+      refreshToken,
+      refreshTokenSecret
+    );
+    console.log(decoded);
+    // Invalidate the refresh token by clearing it in the database
+    await userService.updateRefreshToken(decoded.payload.username, null);
+
+    res.json({
+      status: "SUCCESS",
+      message: "Logout successful!",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send("An error occurred during logout!");
   }
 };
 
@@ -199,4 +215,47 @@ const refreshToken = async (req, res) => {
   }
 };
 
-module.exports = { getAllUsers, signUp, login, refreshToken };
+const deleteUser = async (req, res) => {
+  // Ensure the user is authenticated
+  const refreshToken = req.headers["authorization"]?.split(" ")[1];
+  if (!refreshToken) {
+    return res.status(401).send("Refresh token is required!");
+  }
+
+  try {
+    // Verify the access token to ensure the user is authenticated
+    const refreshTokenSecret = process.env.REFRESH_TOKEN_SECRET;
+    const decoded = await authUtil.verifyToken(
+      refreshToken,
+      refreshTokenSecret
+    );
+
+    const user = await userService.getUserByUserName(decoded.payload.username);
+
+    const refreshTokenDB = user.refresh_token;
+    if (refreshToken === refreshTokenDB) {
+      await userService.deleteUser(decoded.payload.username);
+    } else {
+      return res.status(404).send("You cannot delete user!");
+    }
+    // Delete the user by username (decoded from the access token)
+
+    res.json({
+      status: "SUCCESS",
+      message: "User deleted successfully!",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send("An error occurred while deleting the user!");
+  }
+};
+
+module.exports = {
+  getAllUsers,
+  signUp,
+  login,
+  refreshToken,
+  logout,
+  updateUser,
+  deleteUser,
+};

@@ -1,27 +1,64 @@
-// models/User.js
 const { DataTypes } = require("sequelize");
-const sequelize = require("../config/db.config");
+const sequelize = require("../config/db.config"); // Adjust the path to your database config
 
 const User = sequelize.define(
   "User",
   {
     id: {
       type: DataTypes.INTEGER,
-      primaryKey: true, // Đảm bảo Sequelize nhận diện đúng auto-increment nếu cần
+      autoIncrement: true,
+      primaryKey: true,
     },
-    role: DataTypes.ENUM("customer", "admin"),
-    name: DataTypes.STRING,
-    address: DataTypes.STRING,
-    bio: DataTypes.TEXT,
-    email: DataTypes.STRING,
-    phone: DataTypes.STRING,
-    username: DataTypes.STRING,
-    password: DataTypes.STRING,
-    refresh_token: DataTypes.STRING,
+    role: {
+      type: DataTypes.ENUM("CUSTOMER", "ADMIN"),
+      allowNull: false,
+      defaultValue: "CUSTOMER",
+    },
+    name: {
+      type: DataTypes.STRING(255),
+      allowNull: false,
+    },
+    address: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+    },
+    avatar: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+    },
+    bio: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    email: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      unique: true,
+      validate: {
+        isEmail: true,
+      },
+    },
+    username: {
+      type: DataTypes.STRING(50),
+      allowNull: true,
+      unique: true,
+    },
+    phone: {
+      type: DataTypes.STRING(20),
+      allowNull: true,
+    },
+    password: {
+      type: DataTypes.STRING(255),
+      allowNull: false,
+    },
+    refresh_token: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+    },
   },
   {
-    tableName: "User",
-    timestamps: false, // Nếu bảng không có các trường createdAt và updatedAt
+    tableName: "User", // Matches the existing table name in the database
+    timestamps: false, // Disable timestamps if your table does not have `createdAt` and `updatedAt` fields
   }
 );
 

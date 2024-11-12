@@ -6,7 +6,7 @@ const verify = promisify(jwt.verify).bind(jwt);
 
 const generateToken = async (payload, secretSignature, tokenLife) => {
   try {
-    const result = await sign({ payload }, secretSignature, {
+    const result = await sign({payload}, secretSignature, {
       algorithm: "HS256",
       expiresIn: tokenLife,
     });
