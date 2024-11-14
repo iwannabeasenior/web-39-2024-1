@@ -1,4 +1,6 @@
+import { useNavigate } from 'react-router-dom';
 export default function WhyChoseUs() {
+    const navigate = useNavigate();
     const features = [
         {
             id: 1,
@@ -42,7 +44,7 @@ export default function WhyChoseUs() {
                     Tại Sao Chọn Chúng Tôi?
                 </h2>
                 <p className="text-gray-600">
-                    Chúng tôi cam kết mang đến cho bạn những trải nghiệm ẩm thực tuyệt vời nhất 
+                    Chúng tôi cam kết mang đến cho bạn những trải nghiệm ẩm thực tuyệt vời nhất
                     với chất lượng phục vụ hàng đầu
                 </p>
             </div>
@@ -50,7 +52,7 @@ export default function WhyChoseUs() {
             {/* Features Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                 {features.map((feature) => (
-                    <div 
+                    <div
                         key={feature.id}
                         className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 text-center group"
                     >
@@ -92,10 +94,10 @@ export default function WhyChoseUs() {
                         Đặt bàn ngay để thưởng thức những món ăn tuyệt vời của chúng tôi
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <button className="bg-white text-orange-500 px-8 py-3 rounded-full hover:bg-orange-50 transition-colors duration-300">
+                        <button onClick={() => { navigate("/reservation") }} className="bg-white text-orange-500 px-8 py-3 rounded-full hover:bg-orange-50 transition-colors duration-300">
                             Đặt Bàn Ngay
                         </button>
-                        <button className="border-2 border-white text-white px-8 py-3 rounded-full hover:bg-orange-600 transition-colors duration-300">
+                        <button onClick={() => { navigate("/menu") }} className="border-2 border-white text-white px-8 py-3 rounded-full hover:bg-orange-600 transition-colors duration-300">
                             Xem Menu
                         </button>
                     </div>
