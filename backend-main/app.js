@@ -1,6 +1,10 @@
 const express = require("express");
 const cors = require("cors");
 const app = express();
+const { Server } = require("socket.io"); 
+const { createServer } = require('node:http');
+const server = createServer(app);
+
 require("dotenv").config();
 
 const userRoutes = require("./routes/user.routes"); // Import route user
@@ -30,7 +34,7 @@ sequelize
   .sync()
   .then(() => {
     console.log("Database & tables created!");
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
       console.log(`Server is running on http://localhost:${PORT}/`);
     });
   })
