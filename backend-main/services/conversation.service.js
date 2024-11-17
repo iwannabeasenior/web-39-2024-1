@@ -47,9 +47,24 @@ async function getListMessages(conversationId) {
     return messages;
 }
 
+async function deleteMessage(messageId) { 
+    const message = await Message.findByPk(messageId);
+    if (!message) {
+        const error = new Error("Message not found");
+        error.code = 404;
+        throw error;
+    }
+    message.destroy();
+    return;
+}
+async function sendMessage(io, socket, users, messageData) {
+    
+}
 module.exports = {
     createConversation,
     deleteConversation,
     getListConversations,
-    getListMessages
+    getListMessages,
+    deleteMessage,
+    sendMessage,
 };

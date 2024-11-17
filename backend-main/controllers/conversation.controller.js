@@ -39,10 +39,8 @@ const createConversation = async (req, res) => {
 const getListConversations = async (req, res) => {
     try {
         const user = req.user;
-        const userId = await User.findOne({
-            "username": user.username
-        })
-        const conversations = await conversationService.getListConversations(userId.id);
+
+        const conversations = await conversationService.getListConversations(user.id);
         if (!conversations) { 
             return res.status(404).json({
                 status: "error",
@@ -105,9 +103,30 @@ const getListMessages = async (req, res) => {
         });
     }
 };
+
+const deleteMessage = async (req, res) => {
+    try { 
+        const messageId = req.params.message_id;
+        await conversationService.deleteMessage(messageId);
+    } catch(e) { 
+        if (e.code === 404) {
+            return res.status(404).json({
+                status: "error",
+                message: e.message,
+            });
+        } else {
+            return res.status(500).json({
+                status: "error",
+                message: "An error occured while deleting message"
+            });
+        }
+    }
+};
+
 module.exports = {
     createConversation,
     getListConversations,
     deleteConversation,
-    getListMessages
+    getListMessages,
+    deleteMessage
 };
