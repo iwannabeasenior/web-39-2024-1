@@ -1,9 +1,7 @@
 const express = require("express");
-const cors = require('cors');
+const cors = require("cors");
 const app = express();
 require("dotenv").config();
-
-
 
 const userRoutes = require("./routes/user.routes"); // Import route user
 const conversationRoutes = require("./routes/conversation.routes");
@@ -20,7 +18,7 @@ app.use("/api/auth", userRoutes);
 
 app.use("/api/conversation", conversationRoutes);
 
-app.use("/api/message", messageRoutes);
+// app.use("/api/message", messageRoutes);
 app.use("/tables", tableRouter);
 app.use("/orders", orderRouter);
 
