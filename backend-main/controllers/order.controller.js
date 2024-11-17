@@ -12,30 +12,50 @@ const getAllOrders = async (req, res) => {
 };
 
 const createOrder = async (req, res) => {
-  let { ...orderData } = req.body;
-  
   try {
-    // Lấy thông tin người dùng
-    const user = await userService.getUserByUserName(req.user.username);
+    let { start_time, ...orderData } = req.body;
+
+    // Lấy thông tin người dùng từ token (hoặc cookie, session)
+    const user = await userService.getUserByUserName(req.user.username); // Cập nhật nếu có thay đổi trong xác thực
 
     // Tạo order mới
-    const newOrder = await orderService.createOrder({ customer_id: user.id, ...orderData });
+    const newOrder = await orderService.createOrder({
+      customer_id: user.id,
+      time: start_time,
+      ...orderData,
+    });
 
-    // Tạo reservation cho order vừa tạo
-    const reservationData = {
-      reservation_id: newOrder.id,
-      table_id: 1, // Giả sử bạn đang cố gắng đặt bàn với ID là 1
-      start_time: newOrder.time,
-    };
+    // Tính toán start_time và end_time cho reservation
+    const startTime = newOrder.time;
+    const endTime = new Date(startTime);
+    endTime.setMinutes(endTime.getMinutes() + process.env.END_TIME_OFFSET_MINUTES || 120); // Cộng thêm thời gian từ env
 
-    // Đợi cho việc tạo reservation hoàn tất
-    await orderService.createReservation(reservationData);
+    // Kiểm tra bàn trống trong khoảng thời gian người dùng chọn
+    const availableTables = await orderService.checkAvailableTables(startTime, endTime);
 
-    // Trả về kết quả order đã tạo
-    res.status(201).json(newOrder);
+    if (availableTables && availableTables.length > 0) {
+      // Chọn một bàn trống (ví dụ bàn đầu tiên)
+      const table_id = availableTables[0].table_number;
+      console.log(availableTables.table_number)
+      // Tạo reservation cho order vừa tạo
+      const reservationData = {
+        reservation_id: newOrder.id,
+        table_id: table_id,
+        start_time: startTime,
+      };
+
+      // Tạo reservation
+      await orderService.createReservation(reservationData);
+
+      // Trả về kết quả order đã tạo
+      res.status(201).json(newOrder);
+    } else {
+      // Nếu không có bàn trống
+      res.status(400).json({ error: 'No available tables for the selected time' });
+    }
   } catch (error) {
-    console.error("Error creating order:", error);  // In chi tiết lỗi
-    res.status(500).json({ error: "Error creating order" });
+    console.error('Error creating order:', error); // In chi tiết lỗi
+    res.status(500).json({ error: 'Error creating order' });
   }
 };
 

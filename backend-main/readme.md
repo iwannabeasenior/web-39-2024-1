@@ -7,8 +7,6 @@ npm run dev
 
 sql: cài đặt tài khoản, mật khẩu trong file .env
 
-Đồng bộ db với model:
-Bỏ comment dòng số 11 và dữ liệu trong db bị thay đổi sẽ mất hết
 
 MySQL:
 CREATE TABLE users (
