@@ -1,66 +1,65 @@
-const Sequelize = require('sequelize');
-module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('user', {
+const { DataTypes } = require("sequelize");
+const sequelize = require("../config/db.config"); // Adjust the path to your database config
+
+const User = sequelize.define(
+  "User",
+  {
     id: {
-      autoIncrement: true,
       type: DataTypes.INTEGER,
-      allowNull: false,
-      primaryKey: true
+      autoIncrement: true,
+      primaryKey: true,
     },
     role: {
-      type: DataTypes.ENUM('CUSTOMER','ADMIN'),
-      allowNull: false
+      type: DataTypes.ENUM("CUSTOMER", "ADMIN"),
+      allowNull: false,
+      defaultValue: "CUSTOMER",
     },
     name: {
       type: DataTypes.STRING(255),
-      allowNull: false
-    },
-    gmail: {
-      type: DataTypes.STRING(255),
       allowNull: false,
-      unique: "gmail"
     },
     address: {
       type: DataTypes.STRING(255),
-      allowNull: true
+      allowNull: true,
     },
     avatar: {
       type: DataTypes.STRING(255),
-      allowNull: true
+      allowNull: true,
     },
     bio: {
       type: DataTypes.TEXT,
-      allowNull: true
+      allowNull: true,
+    },
+    email: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      unique: true,
+      validate: {
+        isEmail: true,
+      },
+    },
+    username: {
+      type: DataTypes.STRING(50),
+      allowNull: true,
+      unique: true,
     },
     phone: {
-      type: DataTypes.STRING(15),
-      allowNull: true
+      type: DataTypes.STRING(20),
+      allowNull: true,
     },
     password: {
       type: DataTypes.STRING(255),
-      allowNull: false
-    }
-  }, {
-    sequelize,
-    tableName: 'user',
-    timestamps: false,
-    indexes: [
-      {
-        name: "PRIMARY",
-        unique: true,
-        using: "BTREE",
-        fields: [
-          { name: "id" },
-        ]
-      },
-      {
-        name: "gmail",
-        unique: true,
-        using: "BTREE",
-        fields: [
-          { name: "gmail" },
-        ]
-      },
-    ]
-  });
-};
+      allowNull: false,
+    },
+    refresh_token: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+    },
+  },
+  {
+    tableName: "User", // Matches the existing table name in the database
+    timestamps: false, // Disable timestamps if your table does not have `createdAt` and `updatedAt` fields
+  }
+);
+
+module.exports = User;

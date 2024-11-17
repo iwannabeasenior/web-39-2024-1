@@ -24,8 +24,8 @@ const checkUserExistsSignUp = async (req, res, next) => {
 // Kiểm tra người dùng muốn đăng nhập có tồn tại chưa
 const checkUserExistLogin = async (req, res, next) => {
   try {
-    const { username } = req.body;
-    const userExists = await isUserExists({ username });
+    const { email } = req.body;
+    const userExists = await isUserExists({ email });
     if (!userExists) {
       return res.status(404).send("User does not exist!");
     }
