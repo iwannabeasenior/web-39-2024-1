@@ -18,6 +18,7 @@ async function authenticateToken(req, res, next) {
   if (!user) {
     return res.status(400).send("Access token canot be used!");
   }
+  req.user = user
   next();
 }
 
