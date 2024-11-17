@@ -8,6 +8,9 @@ require("dotenv").config();
 const userRoutes = require("./routes/user.routes"); // Import route user
 const conversationRoutes = require("./routes/conversation.routes");
 
+const tableRouter = require("./routes/table.routes.js");
+const orderRouter = require("./routes/order.routes.js");
+
 const sequelize = require("./config/db.config.js");
 app.use(cors());
 app.use(express.json()); // Parse các request có nội dung dạng JSON
@@ -18,6 +21,8 @@ app.use("/api/auth", userRoutes);
 app.use("/api/conversation", conversationRoutes);
 
 app.use("/api/message", messageRoutes);
+app.use("/tables", tableRouter);
+app.use("/orders", orderRouter);
 
 // Kết nối database và chạy server
 const PORT = process.env.PORT || 3000;
