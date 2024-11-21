@@ -7,7 +7,7 @@ npm run dev
 
 sql: cài đặt tài khoản, mật khẩu trong file .env
 
-Bỏ comment dòng số 19 trong app.js để đồng bộ hóa db, nếu lỗi xóa các bảng trong db rồi chạy lại backend
+Bỏ comment dòng //initModel trong app.js để đồng bộ hóa db, nếu lỗi xóa các bảng trong db rồi chạy lại backend
 
 MySQL:
 CREATE TABLE users (
