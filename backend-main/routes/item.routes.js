@@ -1,17 +1,19 @@
 const express = require("express");
 const userMiddleware = require("../middlewares/user.middleware.js");
-const tableController = require("../controllers/table.controller.js");
+const itemController = require("../controllers/item.controller.js");
 // const userUtil = require("../utils/user.util.js");
 // const authMiddware = require("../middlewares/auth.middleware.js");
 
 const router = express.Router();
 
-router.get("/", tableController.getAllTables);
+router.get("/", itemController.getAllItems);
 
-router.post("/create-table", tableController.createTable);
+router.post("/create-item", itemController.createItem);
 
-router.patch("/update-table", tableController.updateTable);
+router.patch("/update-item", itemController.updateItem);
 
-router.delete("/delete-table", tableController.deleteTable);
+router.get("/search-item", itemController.searchItem);
+
+router.delete("/delete-item", itemController.deleteItem);
 
 module.exports = router;
