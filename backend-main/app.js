@@ -4,7 +4,7 @@ const app = express();
 const { Server } = require("socket.io"); 
 const { createServer } = require('node:http');
 const server = createServer(app);
-const io = Server(server);
+const io = new Server(server);
 const Message = require('./models/message.js');
 const conversationService = require('./services/conversation.service.js');
 require("dotenv").config();
