@@ -7,18 +7,29 @@ import HomePage from './Features/HomePage/HomePage';
 import Reservation from './Features/Reservation/Reservation'
 import Register from "./Features/Register/Register"
 import Menu from './Features/Menu/menu';
+import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
+import {AuthProvider} from "./contexts/AuthContext";
+import Profile from "./Features/Profile/profile";
 
 const AppRoutes = () => {
     return (
-        <Router>
-            <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/reservation" element={<Reservation />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/menu" element={<Menu />} />
-            </Routes>
-        </Router>
+        <AuthProvider>
+            <Router>
+                <Routes>
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/reservation" element={<Reservation />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/menu" element={<Menu />} />
+                    <Route path="/profile" element={
+                        <ProtectedRoute>
+                            <Profile/>
+                        </ProtectedRoute>
+                    } />
+                </Routes>
+            </Router>
+         </AuthProvider>
+
     );
 };
 

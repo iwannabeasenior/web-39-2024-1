@@ -18,7 +18,7 @@ const checkUserExistsSignUp = async (req, res, next) => {
     console.log(error);
     return res
       .status(500)
-      .send("An error occurred while checking for existing user!");
+      .send(" An error occurred while checking for existing user!");
   }
 };
 // Kiểm tra người dùng muốn đăng nhập có tồn tại chưa

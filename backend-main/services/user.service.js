@@ -6,6 +6,7 @@ async function isUserExists(criteria) {
   // Tạo mảng điều kiện `where` dựa trên các thuộc tính có trong `criteria`
   const conditions = [];
 
+
   if (criteria.email) {
     conditions.push({ email: criteria.email });
   }

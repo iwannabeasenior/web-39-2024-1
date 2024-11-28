@@ -1,13 +1,15 @@
 import { Form, Input, Button, Card, Checkbox, message } from 'antd';
 import { UserOutlined, LockOutlined, MailOutlined, PhoneOutlined, HomeOutlined } from '@ant-design/icons';
-import { authAPI } from "../../services/api.service";
+import { authAPI } from "../../services/apis/Auth";
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {useAuth} from "../../contexts/AuthContext";
 
 export default function Login() {
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    const{login}=useAuth();
 
     const handleSubmit = async (values) => {
         const { email, password } = values;
@@ -17,9 +19,9 @@ export default function Login() {
             setLoading(true);
             const response = await authAPI.login(requestData);
             if (response?.accessToken) {
-                localStorage.setItem('token', response.accessToken);
+                login(response);
                 message.success('Đăng nhập thành công!');
-                navigate('/dashboard');
+                navigate('/');
             }
         } catch (error) {
             const errorMessage = error.response?.message || 'Đăng nhập thất bại!';
@@ -98,6 +100,7 @@ export default function Login() {
                             name="password"
                             rules={[
                                 { required: true, message: 'Please input your password!' },
+                                { min: 8, message: 'Password must be at least 8 characters!' }
                             ]}
                         >
                             <Input.Password
