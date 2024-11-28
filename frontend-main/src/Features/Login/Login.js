@@ -24,7 +24,7 @@ export default function Login() {
                 navigate('/');
             }
         } catch (error) {
-            const errorMessage = error.response?.message || 'Đăng nhập thất bại!';
+            const errorMessage = error.response|| 'Đăng nhập thất bại!';
             message.error(errorMessage);
         } finally {
             setLoading(false);
