@@ -1,0 +1,19 @@
+Index: ../backend-main/.env
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>DB_HOST=localhost\r\nDB_USER=root\r\nDB_PASSWORD=ssss\r\nDB_NAME=test01\r\nDB_DIALECT=mysql\r\nDB_PORT=3306\r\nPORT=8080\r\n\r\n#JWT_CREDENTIAL\r\nACCESS_TOKEN_SECRET=Access_Token_Secret_#$%_ExpressJS_Authentication\r\nACCESS_TOKEN_LIFE=60m\r\n\r\nREFRESH_TOKEN_SECRET=Refresh_Token_Secret_#$%_ExpressJS_Authentication\r\nREFRESH_TOKEN_LIFE=150d\r\nREFRESH_TOKEN_SIZE=60\r\n\r\nEND_TIME_OFFSET_MINUTES=120
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/../backend-main/.env b/../backend-main/.env
+--- a/../backend-main/.env	(revision 1429ede9a1371fe2d252f1c056d3256337fdf31f)
++++ b/../backend-main/.env	(date 1732944574258)
+@@ -4,7 +4,7 @@
+ DB_NAME=test01
+ DB_DIALECT=mysql
+ DB_PORT=3306
+-PORT=8080
++PORT=8081
+ 
+ #JWT_CREDENTIAL
+ ACCESS_TOKEN_SECRET=Access_Token_Secret_#$%_ExpressJS_Authentication
