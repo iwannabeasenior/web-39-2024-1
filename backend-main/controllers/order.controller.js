@@ -11,17 +11,63 @@ const getAllOrders = async (req, res) => {
   }
 };
 
+// const createOrder = async (req, res) => {
+//   try {
+//     let { start_time, ...orderData } = req.body;
+
+//     // Lấy thông tin người dùng từ token (hoặc cookie, session)
+//     const user = await userService.getUserByUserName(req.user.username); // Cập nhật nếu có thay đổi trong xác thực
+
+//     // Tạo order mới
+//     const newOrder = await orderService.createOrder({
+//       customer_id: user.id,
+//       time: start_time,
+//       ...orderData,
+//     });
+
+//     // Tính toán start_time và end_time cho reservation
+//     const startTime = newOrder.time;
+//     const endTime = new Date(startTime);
+//     endTime.setMinutes(endTime.getMinutes() + process.env.END_TIME_OFFSET_MINUTES || 120); // Cộng thêm thời gian từ env
+
+//     // Kiểm tra bàn trống trong khoảng thời gian người dùng chọn
+//     const availableOrders = await orderService.checkAvailableTables(startTime, endTime);
+
+//     if (availableOrders && availableOrders.length > 0) {
+//       // Chọn một bàn trống (ví dụ bàn đầu tiên)
+//       const order_id = availableOrders[0].id;
+//       console.log(availableOrders.id)
+//       // Tạo reservation cho order vừa tạo
+//       const reservationData = {
+//         reservation_id: newOrder.id,
+//         order_id: order_id,
+//         start_time: startTime,
+//       };
+
+//       // Tạo reservation
+//       await orderService.createReservation(reservationData);
+
+//       // Trả về kết quả order đã tạo
+//       res.status(201).json(newOrder);
+//     } else {
+//       // Nếu không có bàn trống
+//       res.status(400).json({ error: 'No available orders for the selected time' });
+//     }
+//   } catch (error) {
+//     console.error('Error creating order:', error); // In chi tiết lỗi
+//     res.status(500).json({ error: 'Error creating order' });
+//   }
+// };
+
 const createOrder = async (req, res) => {
   try {
-    let { start_time, ...orderData } = req.body;
-
-    // Lấy thông tin người dùng từ token (hoặc cookie, session)
-    const user = await userService.getUserByUserName(req.user.username); // Cập nhật nếu có thay đổi trong xác thực
+    let { start_time, num_people, ...orderData } = req.body; // Số lượng khách
 
     // Tạo order mới
     const newOrder = await orderService.createOrder({
-      customer_id: user.id,
+      customer_id: req.user.id,
       time: start_time,
+      num_people, // Lưu số lượng khách vào order
       ...orderData,
     });
 
@@ -31,27 +77,50 @@ const createOrder = async (req, res) => {
     endTime.setMinutes(endTime.getMinutes() + process.env.END_TIME_OFFSET_MINUTES || 120); // Cộng thêm thời gian từ env
 
     // Kiểm tra bàn trống trong khoảng thời gian người dùng chọn
-    const availableOrders = await orderService.checkAvailableOrders(startTime, endTime);
+    const availableTables = await orderService.checkAvailableTables(startTime, endTime);
 
-    if (availableOrders && availableOrders.length > 0) {
-      // Chọn một bàn trống (ví dụ bàn đầu tiên)
-      const order_id = availableOrders[0].id;
-      console.log(availableOrders.id)
-      // Tạo reservation cho order vừa tạo
-      const reservationData = {
-        reservation_id: newOrder.id,
-        order_id: order_id,
-        start_time: startTime,
-      };
+    if (availableTables && availableTables.length > 0) {
+      // Tính toán số bàn cần thiết để phục vụ tất cả khách
+      let remainingPeople = num_people;
+      let reservedTables = [];
+      let totalCapacity = 0;
 
-      // Tạo reservation
-      await orderService.createReservation(reservationData);
+      // Duyệt qua các bàn có sẵn và tính tổng sức chứa
+      for (let table of availableTables) {
+        totalCapacity += table.capacity;
+
+        if (remainingPeople > 0) {
+          const peopleAssignedToTable = Math.min(remainingPeople, table.capacity);
+          remainingPeople -= peopleAssignedToTable;
+          reservedTables.push({
+            reservation_id: newOrder.id,
+            table_id: table.table_number,
+            people_assigned: peopleAssignedToTable,
+            start_time: startTime,
+            end_time: endTime,
+          });
+        }
+
+        if (remainingPeople <= 0) {
+          break;
+        }
+      }
+
+      // Kiểm tra nếu tổng sức chứa không đủ cho tất cả khách
+      if (remainingPeople > 0) {
+        // Không đủ bàn
+        res.status(400).json({ error: 'Not enough available tables to seat all guests.' });
+        return; // Không lưu vào DB
+      }
+
+      // Nếu đủ bàn, lưu thông tin reservation vào DB
+      await orderService.createReservations(reservedTables);
 
       // Trả về kết quả order đã tạo
       res.status(201).json(newOrder);
     } else {
       // Nếu không có bàn trống
-      res.status(400).json({ error: 'No available orders for the selected time' });
+      res.status(400).json({ error: 'No available tables for the selected time' });
     }
   } catch (error) {
     console.error('Error creating order:', error); // In chi tiết lỗi
@@ -89,4 +158,5 @@ const updateOrder = async (req, res) => {
 module.exports = {
   getAllOrders,
   createOrder,
+  updateOrder,
 };

@@ -26,6 +26,12 @@ const OrderDetail = sequelize.define('OrderDetail', {
     type: DataTypes.ENUM('reservation', 'ship'),
     allowNull: false,
   },
+  num_people: {
+    type: DataTypes.INTEGER,
+    allowNull: true, // Không bắt buộc khi type là 'ship'
+    validate: {
+      min: 1, // Đảm bảo số người phải >= 1 nếu có giá trị
+    },},
   status: {
     type: DataTypes.ENUM('pending', 'confirmed', 'canceled'),
     defaultValue: 'pending',

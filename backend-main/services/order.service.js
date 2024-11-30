@@ -59,31 +59,96 @@ const checkAvailableTables = async (startTime, endTime) => {
 };
 
 // Hàm tạo đặt bàn
-async function createReservation(reservationData) {
+// async function createReservation(reservationData) {
+//   try {
+//     const { reservation_id, table_id, start_time } = reservationData;
+
+//     // Tính toán thời gian kết thúc (end_time) từ start_time, cộng thêm thời gian lấy từ env
+//     const end_time = new Date(start_time);
+//     end_time.setMinutes(end_time.getMinutes() + reservationDurationMinutes); // Cộng thêm thời gian từ env (tính theo phút)
+
+//     // Tạo đối tượng reservation mới
+//     const newReservation = new ReservationTable({
+//       reservation_id,
+//       table_id,
+//       start_time,
+//       end_time, // Cung cấp end_time
+//     });
+
+//     // Lưu reservation mới vào cơ sở dữ liệu
+//     await newReservation.save();
+
+//     return newReservation; // Trả về reservation vừa được tạo
+//   } catch (error) {
+//     console.error("Error creating reservation:", error);
+//     throw new Error("Error saving the Reservation");
+//   }
+// }
+
+async function createReservations(reservedTables) {
   try {
-    const { reservation_id, table_id, start_time } = reservationData;
+    // Kiểm tra nếu không có bàn nào trong reservedTables
+    if (!reservedTables || reservedTables.length === 0) {
+      throw new Error('No tables to reserve');
+    }
 
-    // Tính toán thời gian kết thúc (end_time) từ start_time, cộng thêm thời gian lấy từ env
-    const end_time = new Date(start_time);
-    end_time.setMinutes(end_time.getMinutes() + reservationDurationMinutes); // Cộng thêm thời gian từ env (tính theo phút)
+    // Tạo danh sách các reservation từ dữ liệu reservedTables
+    const createdReservations = [];
 
-    // Tạo đối tượng reservation mới
-    const newReservation = new ReservationTable({
-      reservation_id,
-      table_id,
-      start_time,
-      end_time, // Cung cấp end_time
-    });
+    // Lặp qua từng bàn trong reservedTables và tạo reservation
+    for (let reservationData of reservedTables) {
+      const { reservation_id, table_id, start_time, people_assigned } = reservationData;
 
-    // Lưu reservation mới vào cơ sở dữ liệu
-    await newReservation.save();
+      // Tính toán thời gian kết thúc (end_time) từ start_time, cộng thêm thời gian lấy từ env
+      const end_time = new Date(start_time);
+      end_time.setMinutes(end_time.getMinutes() + parseInt(process.env.RESERVATION_DURATION_MINUTES) || 120); // Cộng thêm thời gian từ env (tính theo phút)
 
-    return newReservation; // Trả về reservation vừa được tạo
+
+
+      // Kiểm tra xem bàn có đủ sức chứa cho số người đã phân bổ không
+
+      // const userObject = await User.findOne({
+      //   where: {
+      //     username: user.payload.username,
+      //   },
+      // });  
+      const table = await TableInfo.findOne({
+        where: {
+          table_number: table_id,
+        }
+      }); // Lấy thông tin bàn từ cơ sở dữ liệu
+      if (!table) {
+        throw new Error(`Table with number ${table_id} not found`);
+      }
+
+      if (table.capacity < people_assigned) {
+        throw new Error(`Table ${table_id} does not have enough capacity for ${people_assigned} people`);
+      }
+
+      // Tạo đối tượng reservation mới
+      const newReservation = new ReservationTable({
+        reservation_id,
+        table_id,
+        start_time,
+        end_time, // Cung cấp end_time
+        people_assigned,
+      });
+
+      // Lưu reservation mới vào cơ sở dữ liệu
+      await newReservation.save();
+      createdReservations.push(newReservation); // Thêm reservation vừa tạo vào danh sách
+
+    }
+
+    // Trả về danh sách các reservation đã tạo
+    return createdReservations;
+
   } catch (error) {
-    console.error("Error creating reservation:", error);
-    throw new Error("Error saving the Reservation");
+    console.error("Error creating reservations:", error);
+    throw new Error("Error saving the Reservations");
   }
 }
+
 
 const updateTable = async (table_number, updatedData) => {
   // Tìm người dùng theo username
@@ -124,7 +189,7 @@ async function getTableByTableNumber(table_number) {
 
 module.exports = {
   createOrder,
-  createReservation,
+  createReservations,
   checkAvailableTables,
   updateTable,
   getTableByTableNumber,

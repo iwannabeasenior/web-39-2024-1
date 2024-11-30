@@ -39,14 +39,14 @@ const signUp = async (req, res) => {
     res.status(500).json({
       status: "FAILED",
       // message: "An error occurred during sign up!",
-      message: error
+      message: error,
     });
   }
 };
 
 const updateUser = async (req, res) => {
   try {
-    const {...otherFields } = req.body; // Adjust as needed to accept relevant fields
+    const { ...otherFields } = req.body; // Adjust as needed to accept relevant fields
 
     // console.log(req.username)
     // console.log(otherFields);
@@ -127,16 +127,20 @@ const login = async (req, res) => {
     }
 
     res.json({
-      status: "SUCCESS",
+      success: true,
       message: "Login successful!",
-      username: `${user.username}`,
+      username: user.username,
       accessToken: `Bearer ${accessToken}`,
       refreshToken: `Bearer ${refreshToken}`,
 
     });
   } catch (error) {
     console.log(error);
-    return res.status(500).send("An error occurred during login!");
+    return res.status(401).json({
+      success: false,
+      status: "FAILED",
+      message: "Invalid email or password",
+    });
   }
 };
 
@@ -187,7 +191,10 @@ const refreshToken = async (req, res) => {
     );
 
     // Tạo data cho access token mới
-    const dataForAccessToken = { username: decoded.payload.username, role: decoded.payload.role };
+    const dataForAccessToken = {
+      username: decoded.payload.username,
+      role: decoded.payload.role,
+    };
     // Thiết lập thời gian sống và secret cho access token
     const accessTokenLife = process.env.ACCESS_TOKEN_LIFE;
     const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET;

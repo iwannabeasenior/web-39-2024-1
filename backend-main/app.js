@@ -67,7 +67,7 @@ const PORT = process.env.PORT || 8080;
 
 sequelize
   .sync()
-  // nếu muốn đồng bộ db bỏ comment dòng này
+  // nếu muốn đồng bộ lại db bỏ comment dòng này
   // .sync({alter: true})
   .then(() => {
     console.log("Database & tables created!");
