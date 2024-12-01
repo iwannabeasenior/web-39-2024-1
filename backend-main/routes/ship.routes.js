@@ -8,6 +8,10 @@ const router = express.Router(); // create router to define
     2.set state order
     3.
 */
+
+router.get('/', )
+router.post('/', )
+
 router
 module.exports = router;
 
