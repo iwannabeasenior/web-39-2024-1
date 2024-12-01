@@ -1,6 +1,6 @@
 import { Form, Input, Button, Card, Checkbox, message } from 'antd';
 import { UserOutlined, LockOutlined, MailOutlined, PhoneOutlined, HomeOutlined } from '@ant-design/icons';
-import { authAPI } from "../../services/api.service";
+import { authAPI } from "../../services/apis/Auth";
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -10,15 +10,16 @@ export default function Register() {
     const navigate = useNavigate();
 
     const handleSubmit = async (values) => {
-        const { email, password, username, name, phone } = values;
-        const requestdata = { email, password, username, name, phone };
+        const { email, password, username, name, phone,address} = values;
+        const requestdata = { email, password, username, name, phone,address };
         try {
             setLoading(true);
             const response = await authAPI.register(requestdata);
+            console.log(response);
             message.success('Đăng ký thành công!');
             navigate('/login');
         } catch (error) {
-            const errorMessage = error.response?.data?.message || 'Đăng ký thất bại!';
+            const errorMessage = error?.response?.data || 'Đăng ký thất bại!';
             message.error(errorMessage);
         } finally {
             setLoading(false);
@@ -90,6 +91,22 @@ export default function Register() {
                                 className="h-12 bg-white/80 border-amber-200 hover:border-amber-400 focus:border-amber-500 text-amber-900 placeholder:text-amber-400"
                             />
                         </Form.Item>
+                        <Form.Item
+                            name="address"
+                            rules={[
+                                { required: true, message: 'Please input your address!' },
+                                { min: 2, message: 'Address must be at least 2 characters!' }
+                            ]}
+                        >
+                            <Input
+                                prefix={<UserOutlined className="text-amber-500" />}
+                                placeholder="Address"
+                                size="large"
+                                className="h-12 bg-white/80 border-amber-200 hover:border-amber-400 focus:border-amber-500 text-amber-900 placeholder:text-amber-400"
+                            />
+                        </Form.Item>
+
+
 
                         <Form.Item
                             name="username"
@@ -142,7 +159,7 @@ export default function Register() {
                             name="password"
                             rules={[
                                 { required: true, message: 'Please input your password!' },
-                                { min: 6, message: 'Password must be at least 8 characters!' }
+                                { min: 8, message: 'Password must be at least 8 characters!' }
                             ]}
                         >
                             <Input.Password
