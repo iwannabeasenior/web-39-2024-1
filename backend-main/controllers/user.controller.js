@@ -132,6 +132,7 @@ const login = async (req, res) => {
       username: `${user.username}`,
       accessToken: `Bearer ${accessToken}`,
       refreshToken: `Bearer ${refreshToken}`,
+
     });
   } catch (error) {
     console.log(error);
