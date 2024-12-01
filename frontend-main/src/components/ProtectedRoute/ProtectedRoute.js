@@ -10,7 +10,7 @@ const ProtectedRoute = ({ children,roles }) => {
     const { user } = useAuth();
     const location = useLocation();
     const token = localStorage.getItem('accessToken');
-    const decoded = jwtDecode(token.split(' ')[1]);
+    const decoded = jwtDecode(token?.split(' ')[1]);
     console.log("check decode",decoded);
 
 

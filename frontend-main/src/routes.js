@@ -12,7 +12,8 @@ import Profile from "./Features/Profile/profile";
 import AdminLayout from "./Features/Admin/layouts/AdminLayout";
 import BanKhongPhaiLaAdmin from "./Features/BanKhongPhaiLaAdmin/BanKhongPhaiLaAdmin";
 import TableManagement from "./Features/Admin/pages/TableManagements";
-
+import ItemManagements from "./Features/Admin/pages/ItemManagements";
+import UserManagement from "./Features/Admin/pages/UserManagement";
 
 
 
@@ -43,6 +44,9 @@ const AppRoutes = () => {
                         </ProtectedRoute>
                     }>
                         <Route path="tables" element={<TableManagement />} />
+                        <Route path="menu" element={<ItemManagements />} />
+                        <Route path="users" element={<UserManagement />} />
+
                     </Route>
                 </Routes>
             </Router>

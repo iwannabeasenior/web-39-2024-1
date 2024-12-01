@@ -1,7 +1,6 @@
-import React, {useEffect, useState} from 'react';
-import {Table, Button, Modal, Form, Input, Select, Space, message, InputNumber} from 'antd';
-import {tableAPI} from "../../../services/apis/Table";
-import axios from "axios";
+import React, { useEffect, useState } from 'react';
+import { Table, Button, Modal, Form, InputNumber, Space, message } from 'antd';
+import { tableAPI } from "../../../services/apis/Table";
 
 export default function TableManagement() {
     const [tables, setTables] = useState([]);
@@ -10,19 +9,20 @@ export default function TableManagement() {
     const [form] = Form.useForm();
     const [editingTable, setEditingTable] = useState(null);
     const [loading, setLoading] = useState(false);
+
     const fetchTables = async () => {
         setLoading(true);
         try {
-                const response = await tableAPI.getAllTable();
-                setTables(response);
+            const response = await tableAPI.getAllTable();
+            setTables(response);
         } catch (error) {
-            setError("Không thể tải danh sách bàn ");
-            message.error("Lỗi khi tải danh sách bàn")
-
+            setError("Không thể tải danh sách bàn");
+            message.error("Lỗi khi tải danh sách bàn");
         } finally {
             setLoading(false);
         }
-    }
+    };
+
     useEffect(() => {
         fetchTables();
     }, []);
@@ -38,12 +38,10 @@ export default function TableManagement() {
             dataIndex: 'capacity',
             key: 'capacity',
         },
-
         {
             title: 'Thao tác',
             key: 'action',
             render: (_, record) => (
-                console.log("check record", record),
                 <Space size="middle">
                     <Button
                         type="link"
@@ -63,10 +61,8 @@ export default function TableManagement() {
             ),
         },
     ];
-    console.log("tables", tables);
 
-
-    const handleAdd = async () => {
+    const handleAdd = () => {
         setEditingTable(null);
         form.resetFields();
         setIsModalVisible(true);
@@ -79,46 +75,37 @@ export default function TableManagement() {
     };
 
     const handleDelete = async (record) => {
-        try{
-            const requestData = {
-                table_number: record.table_number,
-                capacity: record.capacity
-            };
-             const response=await tableAPI.deleteTable(requestData);
+        try {
+            await tableAPI.deleteTable(record.table_number); // Xóa bàn
             setTables(tables.filter(table => table.table_number !== record.table_number));
             message.success('Xóa bàn thành công');
-        }
-        catch (error) {
+        } catch (error) {
             console.log(error);
             message.error('Xóa bàn không thành công');
         }
-
     };
 
     const handleModalOk = () => {
         form.validateFields()
-            .then( async  values => {
+            .then(async values => {
+                const requestData = {
+                    table_number: values.table_number,
+                    capacity: values.capacity
+                };
+
                 if (editingTable) {
-                    // Handle edit
-                    const requestData = {
-                        table_number: values.table_number,
-                        capacity: values.capacity
-                    };
-                    console.log("check request data",requestData);
-                    await tableAPI.updateTable(requestData);
-                    // window.location.reload();
+                    // Cập nhật bàn
+                    await tableAPI.updateTable({ ...requestData, id: editingTable.id });
+                    // Cập nhật state tables
+                    setTables(tables.map(table => (table.table_number === editingTable.table_number ? { ...table, ...requestData } : table)));
                     message.success('Cập nhật thành công');
                 } else {
-                    // Handle add
-                    const requestData = {
-                        table_number:values.table_number,
-                        capacity:values.capacity
-                    };
+                    // Thêm bàn mới
                     const newTable = await tableAPI.addTable(requestData);
-                    window.location.reload();
-                    setTables([...tables, newTable]);
+                    setTables([...tables, newTable]); // Cập nhật state với bàn mới
                     message.success('Thêm bàn mới thành công');
                 }
+
                 setIsModalVisible(false);
                 form.resetFields();
             })
@@ -142,13 +129,13 @@ export default function TableManagement() {
 
             <div className="bg-white rounded-lg shadow">
                 <Table
-                    columns={columns} // Đảm bảo columns đã được định nghĩa đúng
-                    dataSource={tables} // Sử dụng toàn bộ mảng tables
-                    rowKey="id" // Sử dụng id làm khóa cho mỗi dòng
+                    columns={columns}
+                    dataSource={tables}
+                    rowKey="table_number" // Sử dụng table_number làm khóa cho mỗi dòng
+                    loading={loading}
                     className="w-full"
                 />
             </div>
-
 
             <Modal
                 title={editingTable ? "Sửa thông tin bàn" : "Thêm bàn mới"}
@@ -163,23 +150,21 @@ export default function TableManagement() {
                     form={form}
                     layout="vertical"
                     className="mt-4"
-
                 >
                     <Form.Item
                         name="table_number"
                         label="Số bàn"
-                        rules={[{required: true, message: 'Vui lòng nhập số bàn!'}]}
+                        rules={[{ required: true, message: 'Vui lòng nhập số bàn!' }]}
                     >
-                        <InputNumber className="w-full" type="number" placeholder="Nhập số bàn"/>
+                        <InputNumber className="w-full" type="number" placeholder="Nhập số bàn" />
                     </Form.Item>
                     <Form.Item
                         name="capacity"
                         label="Sức chứa"
-                        rules={[{required: true, message: 'Vui lòng nhập sức chứa!'}]}
+                        rules={[{ required: true, message: 'Vui lòng nhập sức chứa!' }]}
                     >
-                        <InputNumber className="w-full"  placeholder="Nhập sức chứa"/>
+                        <InputNumber className="w-full" placeholder="Nhập sức chứa" />
                     </Form.Item>
-
                 </Form>
             </Modal>
         </div>
