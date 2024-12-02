@@ -4,6 +4,7 @@ const sequelize = require("../config/db.config");
 const OrderDetail = require("../models/order_detail.model");
 const ReservationTable = require("../models/reservation_table.model");
 const TableInfo = require("../models/table_info.model");
+const ItemOrder = require("../models/item_order.model")
 
 // 1. Cấu hình dotenv để đọc biến môi trường từ .env
 require("dotenv").config();
@@ -12,19 +13,19 @@ require("dotenv").config();
 const reservationDurationMinutes =
   parseInt(process.env.TABLE_RESERVATION_DURATION_MINUTES) || 120; // Giả sử 120 phút là giá trị mặc định
 
-async function createOrder(orderData) {
+async function createOrder(orderData, { transaction }) {
   try {
     const newOrder = new OrderDetail({
       ...orderData,
     });
 
-    // Lưu order mới vào cơ sở dữ liệu
-    await newOrder.save();
+    // Lưu order mới vào cơ sở dữ liệu với transaction
+    await newOrder.save({ transaction });
 
     return newOrder; // Trả về order vừa được tạo
   } catch (error) {
-    // Xử lý lỗi khi lưu vào cơ sở dữ liệu
-    throw new Error("Error saving the order");
+    console.error("Error saving the order:", error);
+    throw new Error("Error saving the order"); // Ném lỗi ra ngoài để rollback transaction nếu có lỗi
   }
 }
 
@@ -85,38 +86,26 @@ const checkAvailableTables = async (startTime, endTime) => {
 //   }
 // }
 
-async function createReservations(reservedTables) {
+async function createReservations(reservedTables, { transaction }) {
   try {
-    // Kiểm tra nếu không có bàn nào trong reservedTables
     if (!reservedTables || reservedTables.length === 0) {
       throw new Error('No tables to reserve');
     }
 
-    // Tạo danh sách các reservation từ dữ liệu reservedTables
     const createdReservations = [];
 
     // Lặp qua từng bàn trong reservedTables và tạo reservation
     for (let reservationData of reservedTables) {
       const { reservation_id, table_id, start_time, people_assigned } = reservationData;
 
-      // Tính toán thời gian kết thúc (end_time) từ start_time, cộng thêm thời gian lấy từ env
       const end_time = new Date(start_time);
-      end_time.setMinutes(end_time.getMinutes() + parseInt(process.env.RESERVATION_DURATION_MINUTES) || 120); // Cộng thêm thời gian từ env (tính theo phút)
+      end_time.setMinutes(end_time.getMinutes() + parseInt(process.env.RESERVATION_DURATION_MINUTES) || 120);
 
-
-
-      // Kiểm tra xem bàn có đủ sức chứa cho số người đã phân bổ không
-
-      // const userObject = await User.findOne({
-      //   where: {
-      //     username: user.payload.username,
-      //   },
-      // });  
       const table = await TableInfo.findOne({
-        where: {
-          table_number: table_id,
-        }
-      }); // Lấy thông tin bàn từ cơ sở dữ liệu
+        where: { table_number: table_id },
+        transaction, // Sử dụng transaction
+      });
+
       if (!table) {
         throw new Error(`Table with number ${table_id} not found`);
       }
@@ -130,22 +119,19 @@ async function createReservations(reservedTables) {
         reservation_id,
         table_id,
         start_time,
-        end_time, // Cung cấp end_time
+        end_time,
         people_assigned,
       });
 
-      // Lưu reservation mới vào cơ sở dữ liệu
-      await newReservation.save();
-      createdReservations.push(newReservation); // Thêm reservation vừa tạo vào danh sách
-
+      // Lưu reservation mới vào cơ sở dữ liệu với transaction
+      await newReservation.save({ transaction });
+      createdReservations.push(newReservation);
     }
 
-    // Trả về danh sách các reservation đã tạo
     return createdReservations;
-
   } catch (error) {
-    console.error("Error creating reservations:", error);
-    throw new Error("Error saving the Reservations");
+    console.error('Error creating reservations:', error);
+    throw new Error('Error saving the Reservations');
   }
 }
 
@@ -187,10 +173,30 @@ async function getTableByTableNumber(table_number) {
   }
 }
 
+
+async function createItemOrders(itemOrders, { transaction }) {
+  try {
+    // Kiểm tra nếu không có item nào để tạo
+    if (!itemOrders || itemOrders.length === 0) {
+      throw new Error("No items to create");
+    }
+
+    // Lưu tất cả các item orders vào cơ sở dữ liệu
+    await ItemOrder.bulkCreate(itemOrders, { transaction });
+
+    // Trả về kết quả (mảng các item orders đã được tạo)
+    return itemOrders; // Hoặc có thể trả về thông tin các item order đã được lưu
+  } catch (error) {
+    console.error("Error creating item orders:", error);
+    throw new Error("Error saving item orders");
+  }
+}
+
 module.exports = {
   createOrder,
   createReservations,
   checkAvailableTables,
   updateTable,
   getTableByTableNumber,
+  createItemOrders,
 };

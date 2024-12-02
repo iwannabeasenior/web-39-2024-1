@@ -33,7 +33,7 @@ const OrderDetail = sequelize.define('OrderDetail', {
       min: 1, // Đảm bảo số người phải >= 1 nếu có giá trị
     },},
   status: {
-    type: DataTypes.ENUM('pending', 'confirmed', 'canceled'),
+    type: DataTypes.ENUM('pending', 'confirmed', 'canceled', 'out_of_seats'),
     defaultValue: 'pending',
   },
 }, {
