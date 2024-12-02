@@ -12,86 +12,6 @@ const getAllOrders = async (req, res) => {
   }
 };
 
-// const createOrder = async (req, res) => {
-//   const transaction = await sequelize.transaction(); // Khởi tạo transaction
-//   try {
-//     let { start_time, num_people, ...orderData } = req.body; // Số lượng khách
-
-//     // Tạo order mới trong transaction
-//     const newOrder = await orderService.createOrder(
-//       {
-//         customer_id: req.user.id,
-//         time: start_time,
-//         num_people, // Lưu số lượng khách vào order
-//         ...orderData,
-//       },
-//       { transaction } // Pass transaction vào trong service
-//     );
-
-//     // Tính toán start_time và end_time cho reservation
-//     const startTime = newOrder.time;
-//     const endTime = new Date(startTime);
-//     endTime.setMinutes(endTime.getMinutes() + process.env.END_TIME_OFFSET_MINUTES || 120); // Cộng thêm thời gian từ env
-
-//     // Kiểm tra bàn trống trong khoảng thời gian người dùng chọn
-//     const availableTables = await orderService.checkAvailableTables(startTime, endTime);
-
-//     if (availableTables && availableTables.length > 0) {
-//       // Tính toán số bàn cần thiết để phục vụ tất cả khách
-//       let remainingPeople = num_people;
-//       let reservedTables = [];
-//       let totalCapacity = 0;
-
-//       // Duyệt qua các bàn có sẵn và tính tổng sức chứa
-//       for (let table of availableTables) {
-//         totalCapacity += table.capacity;
-
-//         if (remainingPeople > 0) {
-//           const peopleAssignedToTable = Math.min(remainingPeople, table.capacity);
-//           remainingPeople -= peopleAssignedToTable;
-//           reservedTables.push({
-//             reservation_id: newOrder.id,
-//             table_id: table.table_number,
-//             people_assigned: peopleAssignedToTable,
-//             start_time: startTime,
-//             end_time: endTime,
-//           });
-//         }
-
-//         if (remainingPeople <= 0) {
-//           break;
-//         }
-//       }
-
-//       // Kiểm tra nếu tổng sức chứa không đủ cho tất cả khách
-//       if (remainingPeople > 0) {
-//         // Không đủ bàn
-//         await transaction.rollback(); // Rollback transaction nếu không đủ bàn
-//         res.status(400).json({ error: 'Not enough available tables to seat all guests.' });
-//         return; // Không lưu vào DB
-//       }
-
-//       // Nếu đủ bàn, lưu thông tin reservation vào DB
-//       await orderService.createReservations(reservedTables, { transaction }); // Pass transaction vào trong service
-
-//       // Commit transaction khi tất cả các thao tác thành công
-//       await transaction.commit();
-
-//       // Trả về kết quả order đã tạo
-//       res.status(201).json(newOrder);
-//     } else {
-//       // Nếu không có bàn trống
-//       await transaction.rollback(); // Rollback transaction nếu không có bàn trống
-//       res.status(400).json({ error: 'No available tables for the selected time' });
-//     }
-//   } catch (error) {
-//     // Xử lý lỗi và rollback transaction
-//     console.error('Error creating order:', error);
-//     await transaction.rollback(); // Rollback transaction nếu có lỗi
-//     res.status(500).json({ error: 'Error creating order' });
-//   }
-// };
-
 const createOrder = async (req, res) => {
   const transaction = await sequelize.transaction(); // Khởi tạo transaction
   try {
@@ -108,18 +28,20 @@ const createOrder = async (req, res) => {
       { transaction } // Pass transaction vào trong service
     );
 
-    // Tính toán start_time và end_time cho reservation
-    const startTime = newOrder.time;
-    const endTime = new Date(startTime);
-    endTime.setMinutes(
-      endTime.getMinutes() + process.env.END_TIME_OFFSET_MINUTES || 120
-    ); // Cộng thêm thời gian từ env
+    // Lấy thời gian bắt đầu từ orderData
+    const startTime = newOrder.time; // Giả sử thời gian bắt đầu là time trong orderData
 
-    // Kiểm tra bàn trống trong khoảng thời gian người dùng chọn
-    const availableTables = await orderService.checkAvailableTables(
-      startTime,
-      endTime
-    );
+    // Cộng thêm thời gian từ biến môi trường (mặc định là 120 phút nếu không có giá trị trong ENV)
+    const offsetMinutes = parseInt(process.env.END_TIME_OFFSET_MINUTES) || 120; 
+    const endTime = new Date(startTime);
+    endTime.setMinutes(endTime.getMinutes() + offsetMinutes);
+
+    // Chuyển startTime và endTime thành dạng chuỗi ISO chuẩn
+    const startTimeFormatted = startTime.toISOString();
+    const endTimeFormatted = endTime.toISOString();
+
+    // Kiểm tra bàn trống trong khoảng thời gian người dùng chọn và sử dụng lock
+    const availableTables = await orderService.checkAvailableTables(startTimeFormatted, endTimeFormatted, { transaction });
 
     if (availableTables && availableTables.length > 0) {
       // Tính toán số bàn cần thiết để phục vụ tất cả khách
@@ -162,17 +84,19 @@ const createOrder = async (req, res) => {
       }
 
       // Nếu đủ bàn, lưu thông tin reservation vào DB
-      await orderService.createReservations(reservedTables, { transaction }); // Pass transaction vào trong service
+      await orderService.createReservations(reservedTables, { transaction });
 
-      // Tạo item orders (mối quan hệ giữa món hàng và đơn hàng)
-      let itemOrders = items.map((item) => ({
-        item_id: item.id,
-        quantity: item.quantity,
-        order_id: newOrder.id,
-      }));
+      // Nếu có món hàng, tạo item orders (mối quan hệ giữa món hàng và đơn hàng)
+      if (items && items.length > 0) {
+        let itemOrders = items.map((item) => ({
+          item_id: item.id,
+          quantity: item.quantity,
+          order_id: newOrder.id,
+        }));
 
-      // Lưu thông tin vào bảng item_order
-      await orderService.createItemOrders(itemOrders, { transaction });
+        // Lưu thông tin vào bảng item_order
+        await orderService.createItemOrders(itemOrders, { transaction });
+      }
 
       // Commit transaction khi tất cả các thao tác thành công
       await transaction.commit();
@@ -193,6 +117,7 @@ const createOrder = async (req, res) => {
     res.status(500).json({ error: "Error creating order" });
   }
 };
+
 
 const updateOrder = async (req, res) => {
   try {

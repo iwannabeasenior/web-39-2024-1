@@ -30,34 +30,33 @@ async function createOrder(orderData, { transaction }) {
 }
 
 // Hàm kiểm tra xem có bàn nào trống trong khoảng thời gian người dùng chọn
-const checkAvailableTables = async (startTime, endTime) => {
+const checkAvailableTables = async (startTime, endTime, options = {}) => {
   try {
-    // Chuyển startTime và endTime sang dạng chuỗi ISO chuẩn
-    const startTimeFormatted = new Date(startTime).toISOString();
-    const endTimeFormatted = new Date(endTime).toISOString();
+    console.log(startTime, "and", endTime);
 
-    // Tìm các bàn trống trong khoảng thời gian từ startTime đến endTime
+    // Tìm các bàn trống trong khoảng thời gian từ startTime đến endTime với cơ chế locking
     const availableTables = await TableInfo.findAll({
       where: {
         table_number: {
           [Op.notIn]: sequelize.literal(`
             (SELECT table_id 
             FROM reservation_table
-            WHERE start_time < '${endTimeFormatted}' AND end_time > '${startTimeFormatted}')
+            WHERE start_time < '${endTime}' AND end_time > '${startTime}')
           `),
         },
       },
+      lock: true, // Đảm bảo khóa các bản ghi trong quá trình kiểm tra
+      transaction: options.transaction, // Sử dụng transaction từ bên ngoài nếu có
     });
 
     // Kiểm tra và trả về danh sách các bàn trống nếu có
-    // console.log("Số bàn trống:", availableTables.length);
-    // console.log(availableTables);
     return availableTables.length > 0 ? availableTables : null;
   } catch (error) {
     console.error("Error checking available tables:", error);
     throw error;
   }
 };
+
 
 // Hàm tạo đặt bàn
 // async function createReservation(reservationData) {
