@@ -12,11 +12,7 @@ export default function DeliveryHeader() {
     const navigate = useNavigate();
 
     // Sample user data - replace with actual user data from your auth system
-    const user = {
-        name: "Nguyễn Văn A",
-        avatar: "https://placehold.co/40x40",
-        phone: "0123.456.789"
-    };
+
 
     return (
         <div className="relative">
@@ -92,17 +88,6 @@ export default function DeliveryHeader() {
                                     </span>
                                 )}
                             </button>
-
-                            {/* User Menu */}
-                            <div className="hidden md:flex items-center gap-2 cursor-pointer">
-                                <img 
-                                    src={user.avatar} 
-                                    alt="User avatar" 
-                                    className="w-8 h-8 rounded-full"
-                                />
-                                <span className="text-gray-600">{user.name}</span>
-                                <i className="fas fa-chevron-down text-xs text-gray-600"></i>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -130,19 +115,6 @@ export default function DeliveryHeader() {
             {isMobileMenuOpen && (
                 <div className="absolute top-full left-0 w-full bg-white shadow-lg z-50 md:hidden">
                     <div className="p-4 space-y-4">
-                        {/* User Info */}
-                        <div className="flex items-center gap-3 pb-4 border-b border-gray-200">
-                            <img 
-                                src={user.avatar} 
-                                alt="User avatar" 
-                                className="w-10 h-10 rounded-full"
-                            />
-                            <div>
-                                <div className="font-semibold">{user.name}</div>
-                                <div className="text-sm text-gray-500">{user.phone}</div>
-                            </div>
-                        </div>
-
                         {/* Menu Items */}
                         <div className="space-y-3">
                             <a href="#orders" className="flex items-center gap-3 text-gray-600 hover:text-amber-600">

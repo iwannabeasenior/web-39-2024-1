@@ -1,22 +1,36 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import '../../../src/global.css'
+import '../../../src/global.css';
 import { authAPI } from "../../services/apis/Auth";
-
+import {jwtDecode} from 'jwt-decode'; // Sửa import jwtDecode
+import React from 'react';
 
 export default function Header({ logo, navLinks }) {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [user, setUser] = useState(null);
+    const [isAdmin, setIsAdmin] = useState(false);
 
     useEffect(() => {
         // Kiểm tra trạng thái đăng nhập
         const checkLoginStatus = () => {
             const token = localStorage.getItem('accessToken');
-            const userData = localStorage.getItem('user');
-            if (token && userData) {
-                setIsLoggedIn(true);
-                setUser(JSON.parse(userData));
+            if (token) {
+                try {
+                    const decoded = jwtDecode(token.split(' ')[1]); // Giải mã token
+                    setUser(decoded); // Lưu thông tin người dùng
+                    console.log("Decoded token:", decoded);
+
+                    // Kiểm tra vai trò của người dùng
+                    if (decoded?.payload.role === 'ADMIN') {
+                        setIsAdmin(true);
+                    }
+                    setIsLoggedIn(true);
+                } catch (error) {
+                    console.error("Failed to decode token:", error);
+                }
+            } else {
+                console.error("Token is not available");
             }
         };
 
@@ -28,7 +42,9 @@ export default function Header({ logo, navLinks }) {
         localStorage.clear();
         setIsLoggedIn(false);
         setUser(null);
+        setIsAdmin(false); // Đặt lại trạng thái admin
         setIsDropdownOpen(false);
+        window.location.reload();
     };
 
     return (
@@ -54,6 +70,12 @@ export default function Header({ logo, navLinks }) {
             </div>
 
             <div className="flex items-center gap-4">
+                {isAdmin && (
+                    <Link to={'/admin'} className="text-blue-500">
+                        Admin
+                    </Link>
+                )
+                }
                 {isLoggedIn ? (
                     <div className="relative">
                         <button
@@ -67,9 +89,7 @@ export default function Header({ logo, navLinks }) {
                             />
                             <span className="text-gray-700">{user?.username}</span>
                             <svg
-                                className={`w-4 h-4 transition-transform ${
-                                    isDropdownOpen ? 'rotate-180' : ''
-                                }`}
+                                className={`w-4 h-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -101,7 +121,7 @@ export default function Header({ logo, navLinks }) {
                                 </Link>
                                 <button
                                     onClick={handleLogout}
-                                    className="block w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-100"
+                                    className="block w-full text-left px-4 py-2 text-red-500 hover:bg-gray-100"
                                 >
                                     Đăng xuất
                                 </button>
@@ -126,5 +146,5 @@ export default function Header({ logo, navLinks }) {
                 )}
             </div>
         </header>
-    )
+    );
 }

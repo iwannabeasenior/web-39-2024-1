@@ -76,7 +76,7 @@ export default function TableManagement() {
 
     const handleDelete = async (record) => {
         try {
-            await tableAPI.deleteTable(record.table_number); // Xóa bàn
+            await tableAPI.deleteTable(record); // Xóa bàn
             setTables(tables.filter(table => table.table_number !== record.table_number));
             message.success('Xóa bàn thành công');
         } catch (error) {

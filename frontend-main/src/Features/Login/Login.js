@@ -27,7 +27,6 @@ export default function Login() {
                 login(response);
                 message.success('Đăng nhập thành công!');
                 const decoded = jwtDecode(response.accessToken.split(' ')[1]);
-                console.log(decoded,"check decode");
                 if (decoded.payload.role === 'ADMIN') {
                     navigate('/admin');
                 } else {

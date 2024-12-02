@@ -1,52 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-export default function CategoryNavigation() {
-    const [selectedCategory, setSelectedCategory] = useState('all');
+export default function CategoryNavigation({ selectedCategory, onSelectCategory }) {
     const [isScrollable, setIsScrollable] = useState(false);
     const scrollContainerRef = useRef(null);
 
     // Sample categories data - replace with your actual data
     const categories = [
-        {
-            id: 'all',
-            name: 'Tất cả',
-            icon: '🍽️'
-        },
-        {
-            id: 'popular',
-            name: 'Phổ biến',
-            icon: '🔥'
-        },
-        {
-            id: 'rice',
-            name: 'Cơm',
-            icon: '🍚'
-        },
-        {
-            id: 'noodles',
-            name: 'Bún/Phở',
-            icon: '🍜'
-        },
-        {
-            id: 'drinks',
-            name: 'Đồ uống',
-            icon: '🥤'
-        },
-        {
-            id: 'snacks',
-            name: 'Ăn vặt',
-            icon: '🍿'
-        },
-        {
-            id: 'desserts',
-            name: 'Tráng miệng',
-            icon: '🍰'
-        },
-        {
-            id: 'vegetarian',
-            name: 'Đồ chay',
-            icon: '🥗'
-        }
+        { id: 'all', name: 'Tất cả', icon: '🍽️' },
+        { id: 'popular', name: 'Phổ biến', icon: '🔥' },
+        { id: 'cơm', name: 'Cơm', icon: '🍚' },
+        { id: 'phở', name: 'Bún/Phở', icon: '🍜' },
+        { id: 'nước', name: 'Đồ uống', icon: '🥤' },
+        { id: 'chay', name: 'Đồ chay', icon: '🥗' }
     ];
 
     // Check if scroll buttons should be shown
@@ -84,10 +49,10 @@ export default function CategoryNavigation() {
                     <>
                         {/* Left Shadow */}
                         <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
-                        
+
                         {/* Right Shadow */}
                         <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
-                        
+
                         {/* Scroll Buttons */}
                         <button
                             onClick={() => scroll('left')}
@@ -113,13 +78,13 @@ export default function CategoryNavigation() {
                     {categories.map((category) => (
                         <button
                             key={category.id}
-                            onClick={() => setSelectedCategory(category.id)}
+                            onClick={() => onSelectCategory(category.id)}
                             className={`
                                 flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-all duration-200
                                 ${selectedCategory === category.id
-                                    ? 'bg-amber-500 text-white shadow-md hover:bg-amber-600'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                }
+                                ? 'bg-amber-500 text-white shadow-md hover:bg-amber-600'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }
                             `}
                         >
                             <span className="text-lg">{category.icon}</span>
@@ -134,13 +99,13 @@ export default function CategoryNavigation() {
                 {categories.slice(0, 8).map((category) => (
                     <button
                         key={category.id}
-                        onClick={() => setSelectedCategory(category.id)}
+                        onClick={() => onSelectCategory(category.id)}
                         className={`
                             flex flex-col items-center p-2 rounded-lg transition-all duration-200
                             ${selectedCategory === category.id
-                                ? 'bg-amber-50 text-amber-600'
-                                : 'text-gray-600 hover:bg-gray-50'
-                            }
+                            ? 'bg-amber-50 text-amber-600'
+                            : 'text-gray-600 hover:bg-gray-50'
+                        }
                         `}
                     >
                         <span className="text-2xl mb-1">{category.icon}</span>
@@ -151,4 +116,3 @@ export default function CategoryNavigation() {
         </div>
     );
 }
-

@@ -14,13 +14,22 @@ import BanKhongPhaiLaAdmin from "./Features/BanKhongPhaiLaAdmin/BanKhongPhaiLaAd
 import TableManagement from "./Features/Admin/pages/TableManagements";
 import ItemManagements from "./Features/Admin/pages/ItemManagements";
 import UserManagement from "./Features/Admin/pages/UserManagement";
+import Header from "../src/components/HomePage/header"
+
 
 
 
 const AppRoutes = () => {
+    const navLinks = [
+        { path: '/', label: 'Trang chủ' },
+        { path: '/menu', label: 'Thực đơn' },
+        { path: '/reservation', label: 'Đặt bàn' },
+        { path: '/contact', label: 'Liên hệ' },
+    ];
     return (
         <AuthProvider>
             <Router>
+                <Header logo="/Assets/Header/logoRestaurant.png" navLinks={navLinks} />
                 <Routes>
                     {/* Public Routes */}
                     <Route path="/" element={<HomePage />} />

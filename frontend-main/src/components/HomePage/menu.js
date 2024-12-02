@@ -1,6 +1,30 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { itemAPI } from "../../services/apis/Item";
+import { message } from "antd";
+import { Link } from "react-router-dom";
 
 export default function Menu() {
+    const [listItems, setListItems] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const response = await itemAPI.getAllItem();
+            console.log("check res:", response);
+            setListItems(response);
+        } catch (error) {
+            console.error(error);
+            message.error("Lỗi khi tải menu!");
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
     const popularItems = [
         {
             id: 1,
@@ -63,9 +87,9 @@ export default function Menu() {
                         key={category}
                         onClick={() => setActiveCategory(category)}
                         className={`px-6 py-2 rounded-full transition-all duration-300 ${activeCategory === category
-                                ? 'bg-orange-500 text-white'
-                                : 'bg-orange-50 text-gray-700 hover:bg-orange-100'
-                            }`}
+                            ? 'bg-orange-500 text-white'
+                            : 'bg-orange-50 text-gray-700 hover:bg-orange-100'
+                        }`}
                     >
                         {category}
                     </button>
@@ -74,7 +98,7 @@ export default function Menu() {
 
             {/* Food Items Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                {popularItems.map((item) => (
+                {listItems.slice(0, 4).map((item) => ( // Only render the first 4 items
                     <div
                         key={item.id}
                         className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden group"
@@ -101,7 +125,7 @@ export default function Menu() {
                                     {item.name}
                                 </h3>
                                 <span className="text-orange-500 font-bold">
-                                    {item.price}
+                                    {item.price.toLocaleString()} Đ
                                 </span>
                             </div>
 
@@ -111,10 +135,10 @@ export default function Menu() {
                                     {[...Array(5)].map((_, index) => (
                                         <svg
                                             key={index}
-                                            className={`w-4 h-4 ${index < Math.floor(item.rating)
-                                                    ? 'text-yellow-400'
-                                                    : 'text-gray-300'
-                                                }`}
+                                            className={`w-4 h-4 ${index < Math.floor(5)
+                                                ? 'text-yellow-400'
+                                                : 'text-gray-300'
+                                            }`}
                                             fill="currentColor"
                                             viewBox="0 0 20 20"
                                         >
@@ -123,7 +147,7 @@ export default function Menu() {
                                     ))}
                                 </div>
                                 <span className="text-sm text-gray-600">
-                                    ({item.reviews} đánh giá)
+                                    (8888 đánh giá)
                                 </span>
                             </div>
 
@@ -144,7 +168,9 @@ export default function Menu() {
             {/* View All Button */}
             <div className="text-center mt-12">
                 <button className="bg-orange-500 text-white px-8 py-3 rounded-full hover:bg-orange-600 transition-colors duration-300 shadow-lg hover:shadow-xl">
-                    Xem Tất Cả Món Ăn
+                    <Link to="/menu">
+                        Xem Tất Cả Món Ăn
+                    </Link>
                 </button>
             </div>
         </section>
