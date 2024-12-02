@@ -13,6 +13,18 @@ const getAllUsers = async (req, res) => {
   }
 };
 
+const userInfo = async (req, res) => {
+  try {
+    const users = await User.findOne({
+      where: { username: req.user.username },
+      attributes: { exclude: ["refresh_token", "password"] }, // Loại bỏ refresh_token khỏi kết quả
+    });
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ error: "Error fetching users" });
+  }
+};
+
 const signUp = async (req, res) => {
   let { email, password, ...otherFields } = req.body;
   // Kiểm tra password
@@ -84,6 +96,8 @@ const login = async (req, res) => {
       password,
       user.password
     );
+
+    console.log(isPasswordValid);
     if (!isPasswordValid) {
       return res.status(401).send("Password incorrect!");
     }
@@ -132,7 +146,6 @@ const login = async (req, res) => {
       username: user.username,
       accessToken: `Bearer ${accessToken}`,
       refreshToken: `Bearer ${refreshToken}`,
-
     });
   } catch (error) {
     console.log(error);
@@ -222,11 +235,13 @@ const deleteUser = async (req, res) => {
   try {
     // Verify the access token to ensure the user is authenticated
     const user = await userService.getUserByUserName(req.user.username);
+    console.log(req.user.username);
 
     const isPasswordValid = await userService.validatePassword(
       password,
       user.password
     );
+    console.log(isPasswordValid);
     if (!isPasswordValid) {
       return res.status(401).send("Password incorrect!");
     }
@@ -244,6 +259,7 @@ const deleteUser = async (req, res) => {
 
 module.exports = {
   getAllUsers,
+  userInfo,
   signUp,
   login,
   refreshToken,
