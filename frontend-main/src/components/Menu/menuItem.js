@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { itemAPI } from "../../services/apis/Item";
 import { message } from "antd";
 import CategoryNavigation from "../../components/Menu/categoryNavigation";
+import {itemCategoryAPI} from "../../services/apis/ItemCategory";
 
 export default function MenuItems() {
     const [listItems, setListItems] = useState([]);
@@ -9,12 +10,13 @@ export default function MenuItems() {
     const [quantities, setQuantities] = useState({});
     const [addingToCart, setAddingToCart] = useState({});
     const [selectedCategory, setSelectedCategory] = useState('all'); // Mặc định là "Tất cả"
+    const [category, setCategory] = useState('all');
 
     const fetchData = async () => {
         setLoading(true);
         try {
             const response = await itemAPI.getAllItem();
-            console.log("check res:", response);
+            console.log("check res cua category:", response);
             setListItems(response);
             // Khởi tạo số lượng cho mỗi món ăn
             const initialQuantities = Object.fromEntries(response.map(item => [item.id, 1]));
@@ -26,9 +28,24 @@ export default function MenuItems() {
             setLoading(false);
         }
     }
+    const fetchCategory = async () => {
+        setLoading(true);
+        try {
+            const response = await itemCategoryAPI.getAllItemCategory();
+            console.log("check res:", response);
+            setCategory(response)
+            // Khởi tạo số lượng cho mỗi món ăn
+        } catch (error) {
+            console.error(error);
+            message.error("Lỗi khi tải category!");
+        } finally {
+            setLoading(false);
+        }
+    }
 
     useEffect(() => {
         fetchData();
+        fetchCategory();
     }, []);
 
     const handleQuantityChange = (itemId, delta) => {

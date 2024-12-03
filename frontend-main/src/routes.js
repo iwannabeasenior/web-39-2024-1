@@ -17,6 +17,9 @@ import UserManagement from "./Features/Admin/pages/UserManagement";
 import Header from "../src/components/HomePage/header"
 import Contact from './Features/Contact/Contact';
 import OrderManagements from "./Features/Admin/pages/OrderManagement";
+import ContactManagement from "./Features/Admin/pages/ContactManagement";
+import MyOrder from "./Features/Profile/Myorder/MyOrder";
+
 
 
 
@@ -46,6 +49,12 @@ const AppRoutes = () => {
                     <Route path="/profile" element={
                         <ProtectedRoute>
                             <Profile/>
+
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/orders" element={
+                        <ProtectedRoute>
+                            <MyOrder/>
                         </ProtectedRoute>
                     } />
 
@@ -59,6 +68,7 @@ const AppRoutes = () => {
                         <Route path="menu" element={<ItemManagements />} />
                         <Route path="users" element={<UserManagement />} />
                         <Route path="orders" element={<OrderManagements />} />
+                        <Route path="contacts" element={<ContactManagement />} />
 
                     </Route>
                 </Routes>

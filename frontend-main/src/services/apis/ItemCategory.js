@@ -1,8 +1,8 @@
 import  axiosInstance from "../../config/axios.config"
 
 export const itemCategoryAPI = {
-    getAllItem: (data) => {
-        return axiosInstance.get('/item');
+    getAllItemCategory: () => {
+        return axiosInstance.get('/item-category');
     },
 
     createItemCategory: (data) => {

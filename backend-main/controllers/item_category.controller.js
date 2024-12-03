@@ -4,7 +4,7 @@ const Item = require("../models/item.model")
 
 const getAllItemCategory = async (req, res) => {
   try {
-    const itemCategory = await ItemCategoryInfo.findAll();
+    const itemCategory = await ItemCategory.findAll();
     res.json(itemCategory);
   } catch (error) {
     res.status(500).json({ error: "Error fetching itemCategory" });

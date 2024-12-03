@@ -7,11 +7,12 @@ export default function CategoryNavigation({ selectedCategory, onSelectCategory 
     // Sample categories data - replace with your actual data
     const categories = [
         { id: 'all', name: 'Tất cả', icon: '🍽️' },
-        { id: 'popular', name: 'Phổ biến', icon: '🔥' },
         { id: 'cơm', name: 'Cơm', icon: '🍚' },
-        { id: 'phở', name: 'Bún/Phở', icon: '🍜' },
+        { id: 'phở', name: 'Phở', icon: '🍜' },
+        { id: 'bún', name: 'Bún', icon: '🍜' },
         { id: 'nước', name: 'Đồ uống', icon: '🥤' },
-        { id: 'đồ', name: 'Đồ chay', icon: '🥗' }
+        { id: 'chay', name: 'Đồ chay', icon: '🥗' },
+        { id: 'bánh', name: 'Bánh mì', icon: '🍞' }
     ];
 
     // Check if scroll buttons should be shown
