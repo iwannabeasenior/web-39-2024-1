@@ -16,6 +16,8 @@ import ItemManagements from "./Features/Admin/pages/ItemManagements";
 import UserManagement from "./Features/Admin/pages/UserManagement";
 import Header from "../src/components/HomePage/header"
 import Contact from './Features/Contact/Contact';
+import OrderManagements from "./Features/Admin/pages/OrderManagement";
+
 
 
 
@@ -56,6 +58,7 @@ const AppRoutes = () => {
                         <Route path="tables" element={<TableManagement />} />
                         <Route path="menu" element={<ItemManagements />} />
                         <Route path="users" element={<UserManagement />} />
+                        <Route path="orders" element={<OrderManagements />} />
 
                     </Route>
                 </Routes>
