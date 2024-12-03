@@ -17,7 +17,7 @@ const orderRouter = require("./routes/order.routes.js");
 const itemRouter = require("./routes/item.routes.js");
 const itemOrdRouter = require("./routes/item_order.routes.js");
 const shipRouter = require("./routes/ship.routes.js"); 
-
+const contactRouter = require("./routes/contact.routes.js");
 const sequelize = require("./config/db.config.js");
 
 const orderUserInfo = require("./models/order_user_info.model.js");
@@ -33,6 +33,7 @@ app.use("/orders", orderRouter);
 app.use("/item", itemRouter);
 app.use("/item-order", itemOrdRouter);
 app.use("/ship", shipRouter);
+app.use("/contact", contactRouter);
 // chat through socket
 let users = {};
 
