@@ -1,38 +1,156 @@
-// components/ProtectedRoute.js
-import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
-import {message} from "antd";
-import { jwtDecode } from 'jwt-decode';
+import React, { useState, useEffect } from 'react';
+import { Form, Input, Button, Card, DatePicker, message, Select, InputNumber } from 'antd';
+import { itemAPI } from '../../services/apis/Item'; // API to fetch menu items
+import { reservationAPI } from '../../services/apis/Reservation'; // API to create reservations
+import { useLocation } from 'react-router-dom'; // Import useLocation để lấy dữ liệu từ location
 
+const { Option } = Select;
 
+const Reservation = () => {
+    const location = useLocation(); // Lấy location
+    const [loading, setLoading] = useState(false);
+    const [items, setItems] = useState([]);
+    const [selectedItems, setSelectedItems] = useState({});
 
-const ProtectedRoute = ({ children,roles }) => {
-    const { user } = useAuth();
-    const location = useLocation();
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-        return <Navigate to="/login" />;
-    }
-    try {
-        const decoded = jwtDecode(token?.split(' ')?.[1]);
-        console.log("check decode",decoded);
+    useEffect(() => {
+        const fetchItems = async () => {
+            try {
+                const response = await itemAPI.getAllItem();
+                setItems(response);
+            } catch (error) {
+                message.error('Không thể tải danh sách món ăn.');
+            }
+        };
 
+        fetchItems();
+    }, []);
 
-        if (!user) {
-            message.error("Please login");
-            return <Navigate to="/login" state={{ from: location }} replace />;
+    // Nhận giỏ hàng từ location.state
+    useEffect(() => {
+        if (location.state && location.state.cart) {
+            const cart = location.state.cart;
+            const initialSelectedItems = {};
+            cart.forEach(item => {
+                initialSelectedItems[item.id] = item.quantity; // Gán số lượng cho món ăn
+            });
+            setSelectedItems(initialSelectedItems);
         }
-        if (roles && !roles.includes(decoded.payload.role)) {
-            return <Navigate to="/unauthorized" />;
+    }, [location.state]);
+
+    const handleItemChange = (itemId, quantity) => {
+        setSelectedItems(prev => ({
+            ...prev,
+            [itemId]: quantity,
+        }));
+    };
+
+    const handleSubmit = async (values) => {
+        setLoading(true);
+        try {
+            // Xây dựng dữ liệu cơ bản
+            const orderData = {
+                type: "reservation",
+                status: "pending",
+                start_time: new Date(values.date).toISOString(), // Chuyển đổi sang định dạng ISO
+                num_people: values.num_people,
+            };
+
+            // Xử lý các món ăn (nếu có)
+            const selectedItemsArray = Object.entries(selectedItems)
+                .filter(([_, quantity]) => quantity > 0) // Lọc các món có số lượng lớn hơn 0
+                .map(([itemId, quantity]) => ({ id: parseInt(itemId), quantity }));
+
+            if (selectedItemsArray.length > 0) {
+                orderData.items = selectedItemsArray; // Thêm món ăn vào dữ liệu nếu có
+            }
+
+            // Gửi yêu cầu đến API
+            const response = await reservationAPI.createOrder(orderData);
+            message.success('Đặt chỗ thành công!');
+        } catch (error) {
+            console.error('Lỗi khi tạo đơn hàng:', error);
+            message.error('Không thể đặt chỗ. Vui lòng thử lại.');
+        } finally {
+            setLoading(false);
         }
+    };
 
-        return children;
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-amber-50">
+            <div className="max-w-md w-full mx-4 relative">
+                <Card className="relative bg-white/90 backdrop-blur-sm rounded-xl border-0 shadow-lg p-6">
+                    <div className="text-center mt-4 mb-4">
+                        <h1 className="text-3xl font-serif font-bold text-amber-800 mb-2">
+                            Đặt Chỗ
+                        </h1>
+                        <div className="text-amber-700">Vui lòng điền thông tin bên dưới</div>
+                    </div>
 
-    } catch (error) {
-        console.error("Lỗi khi giải mã token:", error);
-        return <Navigate to="/login" />;
-    }
+                    <Form onFinish={handleSubmit} layout="vertical" scrollToFirstError>
+                        <Form.Item
+                            name="name"
+                            rules={[{ required: true, message: 'Vui lòng nhập họ và tên của bạn!' }]}>
+                            <Input placeholder="Họ và Tên" size="large" />
+                        </Form.Item>
 
+                        <Form.Item
+                            name="phone"
+                            rules={[{ required: true, message: 'Vui lòng nhập số điện thoại của bạn!' }]}>
+                            <Input placeholder="Số Điện Thoại" size="large" />
+                        </Form.Item>
+
+                        <Form.Item
+                            name="num_people"
+                            rules={[{ required: true, message: 'Vui lòng nhập số lượng người!' }]}>
+                            <InputNumber
+                                min={1}
+                                placeholder="Số Lượng Người"
+                                size="large"
+                                style={{ width: '100%' }}
+                            />
+                        </Form.Item>
+
+                        <Form.Item
+                            name="date"
+                            rules={[{ required: true, message: 'Vui lòng chọn ngày và giờ!' }]}>
+                            <DatePicker
+                                showTime
+                                placeholder="Chọn Ngày và Giờ"
+                                size="large"
+                                style={{ width: '100%' }}
+                            />
+                        </Form.Item>
+
+                        {/* Chọn Món Ăn */}
+                        <h3 className="font-semibold text-lg">Chọn Món Ăn</h3>
+                        {items.map(item => (
+                            <Form.Item key={item.id} label={item.name}>
+                                <Select
+                                    defaultValue={selectedItems[item.id] || 0} // Điền số lượng đã chọn
+                                    onChange={(value) => handleItemChange(item.id, value)} // Cập nhật selectedItems
+                                    size="large">
+                                    <Option value={0}>Chưa Chọn</Option>
+                                    {[...Array(10).keys()].map(i => (
+                                        <Option key={i + 1} value={i + 1}>{i + 1}</Option>
+                                    ))}
+                                </Select>
+                            </Form.Item>
+                        ))}
+                        <Form.Item>
+                            <Button
+                                type="primary"
+                                htmlType="submit"
+                                loading={loading}
+                                size="large"
+                                className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 transition-all duration-300">
+                                Đặt Chỗ và Gọi Món
+                            </Button>
+                        </Form.Item>
+                    </Form>
+                </Card>
+            </div>
+        </div>
+    );
 };
 
-export default ProtectedRoute;
+export default Reservation;

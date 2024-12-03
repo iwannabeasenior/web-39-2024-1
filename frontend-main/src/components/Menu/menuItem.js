@@ -1,78 +1,86 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { itemAPI } from "../../services/apis/Item";
-import { message } from "antd";
+import { message, Button, Modal, Popconfirm } from 'antd';
 import CategoryNavigation from "../../components/Menu/categoryNavigation";
-import {itemCategoryAPI} from "../../services/apis/ItemCategory";
+import { useHistory, useNavigate } from 'react-router-dom';
 
 export default function MenuItems() {
     const [listItems, setListItems] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [quantities, setQuantities] = useState({});
-    const [addingToCart, setAddingToCart] = useState({});
-    const [selectedCategory, setSelectedCategory] = useState('all'); // Mặc định là "Tất cả"
-    const [category, setCategory] = useState('all');
+    const [selectedCategory, setSelectedCategory] = useState('all');
+    const [cart, setCart] = useState([]);
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const navigate = useNavigate();
+
+    // Lấy giỏ hàng từ localStorage khi trang được tải lại
+    useEffect(() => {
+        const savedCart = JSON.parse(localStorage.getItem('cart')) || [];
+        setCart(savedCart);
+    }, []);
+
+    // Lưu giỏ hàng vào localStorage khi giỏ hàng thay đổi
+    useEffect(() => {
+        localStorage.setItem('cart', JSON.stringify(cart));
+    }, [cart]);
 
     const fetchData = async () => {
         setLoading(true);
         try {
             const response = await itemAPI.getAllItem();
-            console.log("check res cua category:", response);
             setListItems(response);
-            // Khởi tạo số lượng cho mỗi món ăn
-            const initialQuantities = Object.fromEntries(response.map(item => [item.id, 1]));
-            setQuantities(initialQuantities);
         } catch (error) {
             console.error(error);
             message.error("Lỗi khi tải menu!");
         } finally {
             setLoading(false);
         }
-    }
-    const fetchCategory = async () => {
-        setLoading(true);
-        try {
-            const response = await itemCategoryAPI.getAllItemCategory();
-            console.log("check res:", response);
-            setCategory(response)
-            // Khởi tạo số lượng cho mỗi món ăn
-        } catch (error) {
-            console.error(error);
-            message.error("Lỗi khi tải category!");
-        } finally {
-            setLoading(false);
-        }
-    }
+    };
 
     useEffect(() => {
         fetchData();
         fetchCategory();
     }, []);
 
-    const handleQuantityChange = (itemId, delta) => {
-        setQuantities(prev => ({
-            ...prev,
-            [itemId]: Math.max(1, prev[itemId] + delta) // Đảm bảo số lượng không nhỏ hơn 1
-        }));
-    };
-
-    const handleAddToCart = (itemId) => {
-        setAddingToCart(prev => ({ ...prev, [itemId]: true }));
-        // Giả lập gọi API
-        setTimeout(() => {
-            // Thêm món vào giỏ hàng (có thể thêm logic ở đây để thực sự thêm vào giỏ hàng)
-            console.log(`Thêm ${quantities[itemId]} ${listItems.find(item => item.id === itemId)?.name} vào giỏ hàng.`);
-            setAddingToCart(prev => ({ ...prev, [itemId]: false }));
-            setQuantities(prev => ({ ...prev, [itemId]: 1 })); // Reset số lượng về 1
-        }, 1000);
-    };
-
-    // Lọc danh sách món ăn theo danh mục đã chọn
     const filteredItems = selectedCategory === 'all'
         ? listItems
         : listItems.filter(item => item.name.toLowerCase().includes(selectedCategory.toLowerCase()));
 
+    const addToCart = (item) => {
+        setCart(prevCart => {
+            const updatedCart = [...prevCart];
+            const itemIndex = updatedCart.findIndex(cartItem => cartItem.id === item.id);
+            if (itemIndex > -1) {
+                updatedCart[itemIndex].quantity += 1;
+            } else {
+                updatedCart.push({ ...item, quantity: 1 });
+            }
+            return updatedCart;
+        });
+        message.success(`${item.name} đã được thêm vào giỏ hàng!`);
+    };
+
+    // Hàm xóa món trong giỏ hàng
+    const removeFromCart = (itemId) => {
+        setCart(prevCart => prevCart.filter(item => item.id !== itemId));
+        message.success("Đã xóa món khỏi giỏ hàng!");
+    };
+
+    const handleModalClose = () => {
+        setIsModalVisible(false);
+    };
+
+    const handleGoToReservationPage = () => {
+        // Chuyển hướng người dùng sang trang đặt bàn và gửi các món ăn đã chọn
+        navigate('/reservation', { state: { cart } });  // Truyền giỏ hàng qua state
+    };
+    // Điều hướng đến trang đặt ship
+    const handleGoToShipOrder = () => {
+        navigate('/ship', { state: { cart } });  // Chuyển hướng đến trang đặt ship
+    };
+
     return (
         <div className="p-4 bg-gray-100 min-h-screen">
+            {/* Category Navigation */}
             <CategoryNavigation selectedCategory={selectedCategory} onSelectCategory={setSelectedCategory} />
 
             <div className="container mx-auto">
@@ -82,14 +90,8 @@ export default function MenuItems() {
                     ) : (
                         filteredItems.map(item => (
                             <div key={item.id} className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
-                                {/* Phần hình ảnh */}
                                 <div className="relative">
-                                    <img
-                                        className="w-full h-48 object-cover"
-                                        src={item.image}
-                                        alt={item.name}
-                                    />
-                                    {/* Nhãn */}
+                                    <img className="w-full h-48 object-cover" src={item.image} alt={item.name} />
                                     <div className="absolute top-2 left-2 flex gap-2">
                                         {item.isPopular && (
                                             <span className="px-2 py-1 bg-red-500 text-white text-xs font-semibold rounded-full">
@@ -104,9 +106,7 @@ export default function MenuItems() {
                                     </div>
                                 </div>
 
-                                {/* Phần nội dung */}
                                 <div className="p-4">
-                                    {/* Tiêu đề và đánh giá */}
                                     <div className="flex justify-between items-start mb-2">
                                         <h3 className="text-lg font-bold text-gray-800">{item.name}</h3>
                                         <div className="flex items-center">
@@ -115,12 +115,10 @@ export default function MenuItems() {
                                         </div>
                                     </div>
 
-                                    {/* Mô tả */}
                                     <p className="text-gray-600 text-sm mb-4 line-clamp-2">
                                         {item.description}
                                     </p>
 
-                                    {/* Thông tin */}
                                     <div className="flex gap-2 mb-4">
                                         <span className="px-2 py-1 bg-gray-100 text-xs text-gray-600 rounded-full">
                                             ⏱️ {item.preparationTime || 30} phút
@@ -130,7 +128,6 @@ export default function MenuItems() {
                                         </span>
                                     </div>
 
-                                    {/* Giá và hành động */}
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2">
                                             <span className="text-lg font-bold text-amber-600">
@@ -143,49 +140,14 @@ export default function MenuItems() {
                                             )}
                                         </div>
 
+                                        {/* Thêm vào giỏ hàng */}
                                         <div className="flex items-center gap-2">
-                                            {/* Điều khiển số lượng */}
-                                            <div className="flex items-center gap-1">
-                                                <button
-                                                    onClick={() => handleQuantityChange(item.id, -1)}
-                                                    className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600"
-                                                >
-                                                    -
-                                                </button>
-                                                <span className="w-8 text-center">{quantities[item.id]}</span>
-                                                <button
-                                                    onClick={() => handleQuantityChange(item.id, 1)}
-                                                    className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600"
-                                                >
-                                                    +
-                                                </button>
-                                            </div>
-
-                                            {/* Nút thêm vào giỏ */}
-                                            <button
-                                                onClick={() => handleAddToCart(item.id)}
-                                                disabled={addingToCart[item.id]}
-                                                className={`
-                                                    px-4 py-2 rounded-lg font-medium text-white
-                                                    ${addingToCart[item.id]
-                                                    ? 'bg-amber-400 cursor-not-allowed'
-                                                    : 'bg-amber-500 hover:bg-amber-600 active:bg-amber-700'
-                                                }
-                                                    transition-colors duration-200
-                                                `}
+                                            <Button
+                                                onClick={() => addToCart(item)} // Thêm món vào giỏ hàng
+                                                className="px-4 py-2 rounded-lg font-medium text-white bg-blue-500 hover:bg-blue-600"
                                             >
-                                                {addingToCart[item.id] ? (
-                                                    <span className="flex items-center gap-2">
-                                                        <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                        </svg>
-                                                        Đang thêm...
-                                                    </span>
-                                                ) : (
-                                                    'Đặt ngay'
-                                                )}
-                                            </button>
+                                                Thêm vào giỏ
+                                            </Button>
                                         </div>
                                     </div>
                                 </div>
@@ -194,6 +156,61 @@ export default function MenuItems() {
                     )}
                 </div>
             </div>
+
+            {/* Hiển thị giỏ hàng */}
+            {cart.length > 0 && (
+                <div
+                    onClick={() => setIsModalVisible(true)}
+                    className="fixed bottom-4 right-4 bg-amber-500 text-white p-4 rounded-full shadow-lg hover:bg-amber-600 cursor-pointer"
+                >
+                    <span className="font-bold">Giỏ hàng: {cart.length} món</span>
+                </div>
+            )}
+
+            {/* Modal Giỏ hàng */}
+            <Modal
+                title="Giỏ Hàng"
+                visible={isModalVisible}
+                onCancel={handleModalClose}
+                footer={null}
+                width={600}
+            >
+                <div className="space-y-4">
+                    {cart.map(item => (
+                        <div key={item.id} className="flex justify-between items-center border-b pb-2 mb-2">
+                            <div>
+                                <span>{item.name} x {item.quantity}</span>
+                                <span className="text-sm text-gray-500 ml-80">{item.price.toLocaleString()}₫</span>
+                            </div>
+                            <Popconfirm
+                                title="Bạn có chắc chắn muốn xóa món này?"
+                                onConfirm={() => removeFromCart(item.id)}
+                                okText="Có"
+                                cancelText="Không"
+                            >
+                                <Button type="link" className="text-red-500">Xóa</Button>
+                            </Popconfirm>
+                        </div>
+                    ))}
+                    <div className="flex justify-between items-center">
+                        <span className="text-lg font-bold">Tổng: {cart.reduce((total, item) => total + item.price * item.quantity, 0).toLocaleString()}₫</span>
+                        <div className="flex gap-2">
+                            <Button
+                                onClick={handleGoToReservationPage} // Chuyển hướng đến trang đặt bàn
+                                className="px-4 py-2 rounded-lg font-medium text-white bg-amber-500 hover:bg-amber-600"
+                            >
+                                Đặt Bàn
+                            </Button>
+                            <Button
+                                onClick={handleGoToShipOrder} // Chuyển hướng đến trang đặt bàn
+                                className="px-4 py-2 rounded-lg font-medium text-white bg-amber-500 hover:bg-amber-600"
+                            >
+                                Đặt Ship
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 }
