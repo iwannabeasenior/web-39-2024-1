@@ -69,9 +69,9 @@ io.on("connection", (socket) => {
 const PORT = process.env.PORT || 8080;
 
 sequelize
-  .sync()
+  // .sync()
   // nếu muốn đồng bộ lại db bỏ comment dòng này
-  // .sync({alter: true})
+  .sync({alter: true})
   .then(() => {
     console.log("Database & tables created!");
     server.listen(PORT, () => {

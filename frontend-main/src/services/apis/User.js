@@ -11,8 +11,11 @@ export const userAPI = {
         return axiosInstance.patch('/api/auth/update-user',user);
     },
 
-    deleteUser: (user) => {
-        return axiosInstance.delete('/api/auth/delete',user);
+    deleteUser: (data) => {
+        return axiosInstance.delete('/api/auth/delete',{data});
+    },
+    getUserInfo: (data) => {
+    return axiosInstance.get('/api/auth/user-info',data);
     }
 };
 

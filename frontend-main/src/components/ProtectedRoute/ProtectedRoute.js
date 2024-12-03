@@ -10,19 +10,29 @@ const ProtectedRoute = ({ children,roles }) => {
     const { user } = useAuth();
     const location = useLocation();
     const token = localStorage.getItem('accessToken');
-    const decoded = jwtDecode(token?.split(' ')[1]);
-    console.log("check decode",decoded);
-
-
-    if (!user) {
-        message.error("Please login");
-        return <Navigate to="/login" state={{ from: location }} replace />;
+    if (!token) {
+        return <Navigate to="/login" />;
     }
-    if (roles && !roles.includes(decoded.payload.role)) {
-        return <Navigate to="/unauthorized" />;
+    try {
+        const decoded = jwtDecode(token?.split(' ')?.[1]);
+        console.log("check decode",decoded);
+
+
+        if (!user) {
+            message.error("Please login");
+            return <Navigate to="/login" state={{ from: location }} replace />;
+        }
+        if (roles && !roles.includes(decoded.payload.role)) {
+            return <Navigate to="/unauthorized" />;
+        }
+
+        return children;
+
+    } catch (error) {
+        console.error("Lỗi khi giải mã token:", error);
+        return <Navigate to="/login" />;
     }
 
-    return children;
 };
 
 export default ProtectedRoute;

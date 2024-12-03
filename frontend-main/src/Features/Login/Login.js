@@ -1,41 +1,44 @@
 import { Form, Input, Button, Card, Checkbox, message } from 'antd';
-import { UserOutlined, LockOutlined, MailOutlined, PhoneOutlined, HomeOutlined } from '@ant-design/icons';
+import { UserOutlined, LockOutlined, MailOutlined, HomeOutlined } from '@ant-design/icons';
 import { authAPI } from "../../services/apis/Auth";
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {useAuth} from "../../contexts/AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 import { jwtDecode } from 'jwt-decode';
-
 
 export default function Login() {
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
-    const{login}=useAuth();
+    const { login } = useAuth();
 
     const handleSubmit = async (values) => {
-        console.log("thanh")
         const { email, password } = values;
         const requestData = { email, password };
-
-
 
         try {
             setLoading(true);
             const response = await authAPI.login(requestData);
+
             if (response?.accessToken) {
                 login(response);
                 message.success('Đăng nhập thành công!');
-                const decoded = jwtDecode(response.accessToken.split(' ')[1]);
+
+                // Giải mã token để kiểm tra vai trò
+                const decoded = jwtDecode(response.accessToken);
                 if (decoded.payload.role === 'ADMIN') {
                     navigate('/admin');
+                    window.location.reload();
                 } else {
                     navigate('/');
+                    window.location.reload();
                 }
             }
         } catch (error) {
-            const errorMessage = error.response|| 'Đăng nhập thất bại!';
-            message.error(errorMessage);
+            // Kiểm tra xem có phản hồi từ máy chủ không
+            const errorMessage = error?.response?.data || 'Đăng nhập thất bại!';
+            console.log(errorMessage);
+            message.error(errorMessage); // Hiển thị thông báo lỗi từ phản hồi
         } finally {
             setLoading(false);
         }
@@ -73,12 +76,12 @@ export default function Login() {
 
                     <div className="text-center mt-16 mb-8">
                         <h1 className="text-3xl font-serif font-bold text-amber-800 mb-2">
-                            Welcome Back
+                            Chào mừng!
                         </h1>
                         <div className="flex items-center justify-center gap-4">
                             <div className="h-px w-12 bg-amber-300"></div>
                             <p className="text-amber-700 font-serif italic">
-                                Fine Dining Experience
+                                Trải nghiệm ẩm thực tuyệt vời
                             </p>
                             <div className="h-px w-12 bg-amber-300"></div>
                         </div>
@@ -94,8 +97,8 @@ export default function Login() {
                         <Form.Item
                             name="email"
                             rules={[
-                                { type: 'email', message: 'Please enter a valid email!' },
-                                { required: true, message: 'Please input your email!' },
+                                { type: 'email', message: 'Vui lòng nhập email hợp lệ!' },
+                                { required: true, message: 'Vui lòng nhập email của bạn!' },
                             ]}
                         >
                             <Input
@@ -109,13 +112,13 @@ export default function Login() {
                         <Form.Item
                             name="password"
                             rules={[
-                                { required: true, message: 'Please input your password!' },
-                                { min: 8, message: 'Password must be at least 8 characters!' }
+                                { required: true, message: 'Vui lòng nhập mật khẩu!' },
+                                { min: 8, message: 'Mật khẩu phải có ít nhất 8 ký tự!' }
                             ]}
                         >
                             <Input.Password
                                 prefix={<LockOutlined className="text-amber-500" />}
-                                placeholder="Password"
+                                placeholder="Mật khẩu"
                                 size="large"
                                 className="h-12 bg-white/80 border-amber-200 hover:border-amber-400 focus:border-amber-500 text-amber-900 placeholder:text-amber-400"
                             />
@@ -124,13 +127,13 @@ export default function Login() {
                         <div className="flex items-center justify-between">
                             <Form.Item name="remember" valuePropName="checked" noStyle>
                                 <Checkbox className="text-amber-700">
-                                    Remember me
+                                    Ghi nhớ tôi
                                 </Checkbox>
                             </Form.Item>
 
                             <a href="/forgot-password"
-                                className="text-amber-600 hover:text-amber-800">
-                                Forgot password?
+                               className="text-amber-600 hover:text-amber-800">
+                                Quên mật khẩu?
                             </a>
                         </div>
 
@@ -143,15 +146,15 @@ export default function Login() {
                                 loading={loading}
                                 className="h-12 bg-gradient-to-r from-amber-500 to-orange-500 border-0 text-lg font-serif hover:from-amber-600 hover:to-orange-600 shadow-md hover:shadow-lg transition-all duration-300"
                             >
-                                Sign In
+                                Đăng nhập
                             </Button>
                         </Form.Item>
 
                         <div className="text-center text-amber-700">
-                            Don't have an account?{' '}
+                            Bạn chưa có tài khoản?{' '}
                             <a href="/register"
-                                className="font-semibold text-amber-600 hover:text-amber-800">
-                                Register now
+                               className="font-semibold text-amber-600 hover:text-amber-800">
+                                Đăng ký ngay
                             </a>
                         </div>
 

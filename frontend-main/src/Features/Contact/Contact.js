@@ -22,14 +22,14 @@ export default function Contact() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-amber-50">
-            <div className="max-w-md w-full mx-4 relative">
-                <Card className="relative bg-white/90 backdrop-blur-sm rounded-xl border-0 shadow-lg">
-                    <div className="text-center mt-8 mb-4">
-                        <h1 className="text-3xl font-serif font-bold text-amber-800 mb-2">
+        <section className="py-16 px-4 md:px-20 bg-white">
+            <div className="max-w-md w-full mx-auto">
+                <Card className="relative bg-white/90 backdrop-blur-sm rounded-xl border-0 shadow-lg p-6">
+                    <div className="text-center mb-4">
+                        <h1 className="text-3xl font-bold text-gray-800 mb-2">
                             Liên Hệ Chúng Tôi
                         </h1>
-                        <p className="text-amber-700 font-serif italic">
+                        <p className="text-gray-600 italic">
                             Chúng tôi luôn sẵn sàng hỗ trợ bạn
                         </p>
                     </div>
@@ -50,7 +50,6 @@ export default function Contact() {
                                 placeholder="Tên của bạn"
                                 size="large"
                             />
-
                         </Form.Item>
 
                         <Form.Item
@@ -92,13 +91,13 @@ export default function Contact() {
                                 htmlType="submit"
                                 size="large"
                                 loading={loading}
-                                className="h-12 bg-gradient-to-r from-amber-500 to-orange-500 border-0 text-lg font-serif hover:from-amber-600 hover:to-orange-600 shadow-md hover:shadow-lg transition-all duration-300">
+                                className="h-12 bg-gradient-to-r from-amber-500 to-orange-500 border-0 text-lg font-serif hover:from-amber-600 hover:to-orange-600 shadow-md hover:shadow-lg transition-all duration-300 w-full">
                                 Gửi
                             </Button>
                         </Form.Item>
                     </Form>
                 </Card>
             </div>
-        </div>
+        </section>
     );
 }

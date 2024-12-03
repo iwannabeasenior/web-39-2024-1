@@ -104,7 +104,7 @@ export default function ItemManagements() {
             let imageUrl = '';
 
             // Nếu có file ảnh, upload lên Supabase và lấy URL
-            if (fileList.length > 0 && fileList[0].originFileObj) {
+            if (fileList?.length > 0 && fileList?.[0].originFileObj) {
                 const timestamp = Date.now();
                 const file = fileList[0].originFileObj;
                 const { data, error: uploadError } = await supabase.storage

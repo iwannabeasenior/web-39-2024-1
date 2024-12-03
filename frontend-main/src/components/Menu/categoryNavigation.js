@@ -11,7 +11,7 @@ export default function CategoryNavigation({ selectedCategory, onSelectCategory 
         { id: 'cơm', name: 'Cơm', icon: '🍚' },
         { id: 'phở', name: 'Bún/Phở', icon: '🍜' },
         { id: 'nước', name: 'Đồ uống', icon: '🥤' },
-        { id: 'chay', name: 'Đồ chay', icon: '🥗' }
+        { id: 'đồ', name: 'Đồ chay', icon: '🥗' }
     ];
 
     // Check if scroll buttons should be shown
