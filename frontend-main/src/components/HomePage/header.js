@@ -74,8 +74,8 @@ export default function Header({ logo, navLinks }) {
     return (
         <header className="flex items-center justify-between p-4 bg-white shadow-sm sticky top-0 z-10">
             <div className="flex items-center gap-2">
-                <div className="h-10">
-                    <img src={logo} alt="Restaurant Logo" className='h-10' />
+                <div className="h-10 ">
+                    <img src={logo} alt="Restaurant Logo" className='h-10 rounded-2xl' />
                 </div>
                 <nav className="header__nav">
                     <ul className="flex gap-6 list-none">

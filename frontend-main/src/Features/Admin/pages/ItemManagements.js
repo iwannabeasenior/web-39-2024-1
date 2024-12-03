@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Table, Button, Modal, Form, Input, Space, message, InputNumber, Upload } from 'antd';
 import { itemAPI } from "../../../services/apis/Item"; // Giả sử bạn có một API cho menu
 import { UploadOutlined } from '@ant-design/icons';
-import { supabase } from "../../../supabase/supasbase"; // Đảm bảo bạn đã cấu hình Supabase
+import { supabase } from "../../../supabase/supasbase";
+import { itemCategoryAPI } from "../../../services/apis/ItemCategory"; // Đảm bảo bạn đã cấu hình Supabase
 
 export default function ItemManagements() {
     const [menuItems, setMenuItems] = useState([]);
@@ -68,6 +69,7 @@ export default function ItemManagements() {
                     >
                         Xóa
                     </Button>
+
                 </Space>
             ),
         },
@@ -87,6 +89,8 @@ export default function ItemManagements() {
         setFileList([{ uid: '-1', name: record.image, status: 'done', url: record.image }]); // Set file list for editing
         setIsModalVisible(true);
     };
+
+
 
     const handleDelete = async (record) => {
         try {
@@ -121,7 +125,6 @@ export default function ItemManagements() {
                 imageUrl = editingItem.image;
             }
 
-
             const requestData = {
                 name: values.name,
                 price: values.price,
@@ -148,6 +151,8 @@ export default function ItemManagements() {
             message.error('Có lỗi xảy ra. Vui lòng thử lại.');
         }
     };
+
+
 
     const handleUploadChange = ({ fileList }) => {
         setFileList(fileList); // Cập nhật file list khi người dùng chọn ảnh
@@ -221,6 +226,7 @@ export default function ItemManagements() {
                     </Form.Item>
                 </Form>
             </Modal>
+
         </div>
     );
 }

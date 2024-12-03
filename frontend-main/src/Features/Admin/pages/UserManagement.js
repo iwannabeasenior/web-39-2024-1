@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Button, Modal, Form, Input, Space, message } from 'antd';
 import { userAPI } from "../../../services/apis/User"
+import {adminAPI} from "../../../services/apis/Admin"; // Giả sử bạn có một API cho contact
+
 
 export default function UserManagement() {
     const [users, setUsers] = useState([]);
@@ -77,7 +79,7 @@ export default function UserManagement() {
 
     const handleDelete = async (record) => {
         try {
-            await userAPI.deleteUser(record); // Xóa người dùng
+            await adminAPI.deleteUser(record); // Xóa người dùng
             setUsers(users.filter(user => user.id !== record.id));
             message.success('Xóa người dùng thành công');
         } catch (error) {
@@ -95,7 +97,7 @@ export default function UserManagement() {
 
             if (editingUser) {
                 // Cập nhật người dùng
-                await userAPI.updateUser({ ...requestData, id: editingUser.id });
+                await adminAPI.updateUser({ ...requestData, id: editingUser.id });
                 setUsers(users.map(user => (user.id === editingUser.id ? { ...user, ...requestData } : user)));
                 message.success('Cập nhật người dùng thành công');
             } else {
@@ -117,13 +119,13 @@ export default function UserManagement() {
         <div className="p-6">
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-semibold text-gray-800">Quản lý người dùng</h1>
-                <Button
-                    type="primary"
-                    onClick={handleAdd}
-                    className="bg-blue-500 hover:bg-blue-600"
-                >
-                    Thêm người dùng mới
-                </Button>
+                {/*<Button*/}
+                {/*    type="primary"*/}
+                {/*    onClick={handleAdd}*/}
+                {/*    className="bg-blue-500 hover:bg-blue-600"*/}
+                {/*>*/}
+                {/*    Thêm người dùng mới*/}
+                {/*</Button>*/}
             </div>
 
             <div className="bg-white rounded-lg shadow">

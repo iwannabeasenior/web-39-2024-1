@@ -1,24 +1,31 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button, Modal, Form, Input, Space, message, InputNumber } from 'antd';
-import { orderAPI } from "../../../services/apis/Order"; // Giả sử bạn có một API cho đơn hàng
+import { Table, Button, Modal, Form, Input, Space, message, InputNumber, Tabs } from 'antd';
+import moment from 'moment'; // Import moment
+import { orderAPI } from "../../../services/apis/Order"; // Assuming you have an API for orders
+
+const { TabPane } = Tabs;
 
 export default function OrderManagements() {
-    const [orders, setOrders] = useState([]);
+    const [orders, setOrders] = useState({ ship: [], reservation: [] });
     const [error, setError] = useState(null);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [form] = Form.useForm();
     const [editingOrder, setEditingOrder] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [activeTab, setActiveTab] = useState('ship'); // State to track active tab
 
     const fetchOrders = async () => {
         setLoading(true);
         try {
-            const response = await orderAPI.getAllOrders(); // Lấy tất cả đơn hàng
-            setOrders(response);
-            console.log("Đã lấy đơn hàng:", response);
+            const response = await orderAPI.getAllOrders(); // Fetch all orders
+            // Separate orders into ship and reservation
+            const shipOrders = response.filter(order => order.type === 'ship');
+            const reservationOrders = response.filter(order => order.type === 'reservation');
+            setOrders({ ship: shipOrders, reservation: reservationOrders });
+            console.log("Fetched orders:", { shipOrders, reservationOrders });
         } catch (error) {
-            setError("Không thể tải đơn hàng");
-            message.error("Lỗi khi tải đơn hàng");
+            setError("Cannot load orders");
+            message.error("Error loading orders");
         } finally {
             setLoading(false);
         }
@@ -43,12 +50,17 @@ export default function OrderManagements() {
             title: 'Thời gian',
             dataIndex: 'time',
             key: 'time',
-            render: (text) => <span>{text}</span>,
+            render: (text) => <span>{moment(text).format('DD/MM/YYYY HH:mm:ss')}</span>, // Định dạng thời gian
         },
         {
             title: 'Trạng Thái',
             dataIndex: 'status',
             key: 'status',
+        },
+        {
+            title: 'Loại Đơn Hàng',
+            dataIndex: 'type',
+            key: 'type',
         },
         {
             title: 'Hành Động',
@@ -88,11 +100,14 @@ export default function OrderManagements() {
 
     const handleDelete = async (record) => {
         try {
-            await orderAPI.deleteOrder(record.id); // Xóa đơn hàng
-            setOrders(orders.filter(order => order.id !== record.id));
-            message.success('Xóa đơn hàng thành công');
+            await orderAPI.deleteOrder(record.id); // Delete order
+            setOrders(prevOrders => ({
+                ...prevOrders,
+                [record.type]: prevOrders[record.type].filter(order => order.id !== record.id)
+            }));
+            message.success('Deleted order successfully');
         } catch (error) {
-            message.error('Xóa đơn hàng không thành công');
+            message.error('Failed to delete order');
         }
     };
 
@@ -100,22 +115,30 @@ export default function OrderManagements() {
         try {
             const values = await form.validateFields();
             if (editingOrder) {
-                // Cập nhật đơn hàng
+                // Update order
                 await orderAPI.updateOrder({ ...values, id: editingOrder.id });
-                setOrders(orders.map(order => (order.id === editingOrder.id ? { ...order, ...values } : order)));
-                message.success('Cập nhật đơn hàng thành công');
+                setOrders(prevOrders => ({
+                    ...prevOrders,
+                    [editingOrder.type]: prevOrders[editingOrder.type].map(order =>
+                        (order.id === editingOrder.id ? { ...order, ...values } : order)
+                    )
+                }));
+                message.success('Updated order successfully');
             } else {
-                // Thêm đơn hàng mới
+                // Add new order
                 const newOrder = await orderAPI.addOrder(values);
-                setOrders([...orders, newOrder]);
-                message.success('Thêm đơn hàng mới thành công');
+                setOrders(prevOrders => ({
+                    ...prevOrders,
+                    [newOrder.type]: [...prevOrders[newOrder.type], newOrder]
+                }));
+                message.success('Added new order successfully');
             }
 
             setIsModalVisible(false);
             form.resetFields();
         } catch (error) {
-            console.error('Lỗi khi thêm/cập nhật đơn hàng:', error);
-            message.error('Đã xảy ra lỗi. Vui lòng thử lại.');
+            console.error('Error adding/updating order:', error);
+            message.error('An error occurred. Please try again.');
         }
     };
 
@@ -132,16 +155,32 @@ export default function OrderManagements() {
                 </Button>
             </div>
 
-            <div className="bg-white rounded-lg shadow overflow-hidden">
-                <Table
-                    columns={columns}
-                    dataSource={orders}
-                    rowKey="id"
-                    loading={loading}
-                    className="w-full"
-                    pagination={{ pageSize: 5 }} // Thêm phân trang
-                />
-            </div>
+            <Tabs activeKey={activeTab} onChange={setActiveTab}>
+                <TabPane tab="Đơn Hàng Giao Hàng" key="ship">
+                    <div className="bg-white rounded-lg shadow overflow-hidden mb-6">
+                        <Table
+                            columns={columns}
+                            dataSource={orders.ship}
+                            rowKey="id"
+                            loading={loading}
+                            className="w-full"
+                            pagination={{ pageSize: 5 }} // Add pagination
+                        />
+                    </div>
+                </TabPane>
+                <TabPane tab="Đơn Hàng Đặt Chỗ" key="reservation">
+                    <div className="bg-white rounded-lg shadow overflow-hidden mb-6">
+                        <Table
+                            columns={columns}
+                            dataSource={orders.reservation}
+                            rowKey="id"
+                            loading={loading}
+                            className="w-full"
+                            pagination={{ pageSize: 5 }} // Add pagination
+                        />
+                    </div>
+                </TabPane>
+            </Tabs>
 
             <Modal
                 title={editingOrder ? "Sửa Đơn Hàng" : "Thêm Đơn Hàng Mới"}
@@ -178,6 +217,13 @@ export default function OrderManagements() {
                         rules={[{ required: true, message: 'Vui lòng chọn trạng thái đơn hàng!' }]}
                     >
                         <Input placeholder="Nhập trạng thái đơn hàng" className="border rounded-md" />
+                    </Form.Item>
+                    <Form.Item
+                        name="type" // New field for order type
+                        label="Loại Đơn Hàng"
+                        rules={[{ required: true, message: 'Vui lòng nhập loại đơn hàng!' }]}
+                    >
+                        <Input placeholder="Nhập loại đơn hàng" className="border rounded-md" />
                     </Form.Item>
                 </Form>
             </Modal>

@@ -10,7 +10,9 @@ const router = express.Router();
 
 router.use(authMiddware.authenticateToken);
 
-router.get("/", orderController.getAllOrders);
+router.get("/",orderController.getAllOrders);
+
+router.get('/get-all-orders', authMiddware.authenticateToken, orderController.getAllOrdersOfCustomer);
 
 router.post("/create-order", orderController.createOrder);
 
