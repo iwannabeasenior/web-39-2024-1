@@ -13,6 +13,17 @@ const getAllOrders = async (req, res) => {
   }
 };
 
+const getAllOrdersOfCustomer = async (req, res) => {
+  try {
+    const customer_id = req.user.id;
+    const orders = await OrderDetail.findAll({customer_id});
+    res.json(orders);
+  } catch (error) {
+    res.status(500).json({ error: "Error fetching orders" });
+  }
+};
+
+
 const createOrder = async (req, res) => {
   const transaction = await sequelize.transaction(); // Khởi tạo transaction
   try {
@@ -205,5 +216,6 @@ module.exports = {
   createOrder,
   updateOrder,
   createShipOrder,
-  updateEvaluate
+  updateEvaluate,
+  getAllOrdersOfCustomer
 };
