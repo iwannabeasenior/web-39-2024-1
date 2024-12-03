@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, Card, message } from 'antd';
+import { Form, Input, Button, Card } from 'antd';
 import { UserOutlined, MailOutlined, PhoneOutlined } from '@ant-design/icons';
 
 export default function Contact() {
@@ -13,9 +13,9 @@ export default function Contact() {
             setLoading(true);
             // Gửi request đến API để xử lý thông tin liên hệ
             // await contactAPI.sendContact(requestData);
-            message.success('Gửi thông tin thành công!');
+            alert('Gửi thông tin thành công!'); // Using alert instead of message
         } catch (error) {
-            message.error('Gửi thông tin thất bại!');
+            alert('Gửi thông tin thất bại!'); // Using alert instead of message
         } finally {
             setLoading(false);
         }
@@ -44,11 +44,13 @@ export default function Contact() {
                         <Form.Item
                             name="name"
                             rules={[{ required: true, message: 'Vui lòng nhập tên của bạn!' }]}>
+
                             <Input
                                 prefix={<UserOutlined className="text-amber-500" />}
                                 placeholder="Tên của bạn"
                                 size="large"
                             />
+
                         </Form.Item>
 
                         <Form.Item
