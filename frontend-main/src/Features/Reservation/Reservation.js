@@ -1,32 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Input, Button, Card, DatePicker, message, Select, InputNumber } from 'antd';
-import { itemAPI } from '../../services/apis/Item'; // API to fetch menu items
-import { reservationAPI } from '../../services/apis/Reservation'; // API to create reservations
 import { useLocation } from 'react-router-dom'; // Dùng useLocation để lấy giỏ hàng
+import { reservationAPI } from '../../services/apis/Reservation'; // API to create reservations
 
 const { Option } = Select;
 
 const Reservation = () => {
     const [loading, setLoading] = useState(false);
-    const [items, setItems] = useState([]);
     const [selectedItems, setSelectedItems] = useState({});
     const location = useLocation(); // Lấy location từ react-router-dom
     const cart = location.state?.cart || []; // Giỏ hàng được truyền từ trang MenuItems
 
-    useEffect(() => {
-        const fetchItems = async () => {
-            try {
-                const response = await itemAPI.getAllItem();
-                setItems(response);
-            } catch (error) {
-                message.error('Không thể tải danh sách món ăn.');
-            }
-        };
-
-        fetchItems();
-    }, []);
-
-    // Hàm để cập nhật món ăn trong giỏ hàng
+    // Khởi tạo selectedItems từ giỏ hàng
     useEffect(() => {
         const initialSelectedItems = {};
         cart.forEach(item => {
@@ -121,17 +106,14 @@ const Reservation = () => {
 
                         {/* Chọn Món Ăn */}
                         <h3 className="font-semibold text-lg">Chọn Món Ăn</h3>
-                        {items.map(item => (
+                        {cart.map(item => (
                             <Form.Item key={item.id} label={item.name}>
-                                <Select
-                                    value={selectedItems[item.id] || 0} // Sử dụng giá trị từ selectedItems
-                                    onChange={(value) => handleItemChange(item.id, value)} // Cập nhật selectedItems
-                                    size="large">
-                                    <Option value={0}>Chưa Chọn</Option>
-                                    {[...Array(10).keys()].map(i => (
-                                        <Option key={i + 1} value={i + 1}>{i + 1}</Option>
-                                    ))}
-                                </Select>
+                                <InputNumber
+                                    min={0}
+                                    value={selectedItems[item.id] || 0}
+                                    onChange={(value) => handleItemChange(item.id, value)}
+                                    style={{ width: '100%' }}
+                                />
                             </Form.Item>
                         ))}
 

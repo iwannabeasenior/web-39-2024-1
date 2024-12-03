@@ -28,17 +28,23 @@ const ShipOrder = () => {
     const handleSubmit = async (values) => {
         setLoading(true);
         try {
-            const orderData = {
-                customer_name: values.name,
-                customer_phone: values.phone,
-                address: values.address,
-                items: selectedItems.map(item => ({
-                    id: item.id,
+            // Tạo dữ liệu theo cấu trúc yêu cầu
+            const requestData = {
+                userinfo: {
+                    name: values.name,
+                    address: values.address,
+                    phone: values.phone,
+                },
+                status: "confirmed",
+                type: "ship",
+                order: selectedItems.map(item => ({
+                    item_id: item.id,  // Sử dụng item_id thay vì id
                     quantity: item.quantity,
                 })),
             };
 
-            const response = await shipAPI.createShipOrder(orderData);
+            // Gửi yêu cầu API
+            const response = await shipAPI.createShipOrder(requestData);
             message.success('Đặt hàng thành công!');
         } catch (error) {
             console.error('Lỗi khi tạo đơn hàng:', error);
