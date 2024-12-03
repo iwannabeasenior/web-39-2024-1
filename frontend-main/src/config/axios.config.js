@@ -48,9 +48,8 @@ axiosInstance.interceptors.response.use(
                 originalRequest.headers['Authorization'] = accessToken;
                 return axiosInstance(originalRequest);
             } catch (error) {
-                // Nếu refresh token cũng hết hạn, logout user
-                localStorage.clear();
-                window.location.href = '/login';
+                // localStorage.clear();
+                // window.location.href = '/login';
                 return Promise.reject(error);
             }
         }
