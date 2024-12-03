@@ -16,7 +16,7 @@ const Reservation = () => {
                 const response = await itemAPI.getAllItem();
                 setItems(response);
             } catch (error) {
-                message.error('Unable to load menu items.');
+                message.error('Không thể tải danh sách món ăn.');
             }
         };
 
@@ -33,29 +33,29 @@ const Reservation = () => {
     const handleSubmit = async (values) => {
         setLoading(true);
         try {
-            // Build basic data
+            // Xây dựng dữ liệu cơ bản
             const orderData = {
                 type: "reservation",
                 status: "pending",
-                start_time: new Date(values.date).toISOString(), // Convert to ISO format
+                start_time: new Date(values.date).toISOString(), // Chuyển đổi sang định dạng ISO
                 num_people: values.num_people,
             };
 
-            // Handle menu items (if any)
+            // Xử lý các món ăn (nếu có)
             const selectedItemsArray = Object.entries(selectedItems)
-                .filter(([_, quantity]) => quantity > 0) // Filter items with quantity greater than 0
+                .filter(([_, quantity]) => quantity > 0) // Lọc các món có số lượng lớn hơn 0
                 .map(([itemId, quantity]) => ({ id: parseInt(itemId), quantity }));
 
             if (selectedItemsArray.length > 0) {
-                orderData.items = selectedItemsArray; // Add items to the data if present
+                orderData.items = selectedItemsArray; // Thêm món ăn vào dữ liệu nếu có
             }
 
-            // Send request to API
-            const response = await reservationAPI.createOrder(orderData); // reservationAPI is the service that calls the API
-            message.success('Reservation successful!');
+            // Gửi yêu cầu đến API
+            const response = await reservationAPI.createOrder(orderData); // reservationAPI là dịch vụ gọi API
+            message.success('Đặt chỗ thành công!');
         } catch (error) {
-            console.error('Error creating order:', error);
-            message.error('Unable to make a reservation. Please try again.');
+            console.error('Lỗi khi tạo đơn hàng:', error);
+            message.error('Không thể đặt chỗ. Vui lòng thử lại.');
         } finally {
             setLoading(false);
         }
@@ -64,35 +64,33 @@ const Reservation = () => {
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-amber-50">
             <div className="max-w-md w-full mx-4 relative">
-                <Card className="relative bg-white/90 backdrop-blur-sm rounded-xl border-0 shadow-lg">
-                    <div className="text-center mt-8 mb-4">
+                <Card className="relative bg-white/90 backdrop-blur-sm rounded-xl border-0 shadow-lg p-6">
+                    <div className="text-center mt-4 mb-4">
                         <h1 className="text-3xl font-serif font-bold text-amber-800 mb-2">
-                            Reservation
+                            Đặt Chỗ
                         </h1>
-                        <p className="text-amber-700 font-serif italic">
-                            Please fill out the information below
-                        </p>
+                        <div className="text-amber-700">Vui lòng điền thông tin bên dưới</div>
                     </div>
 
                     <Form onFinish={handleSubmit} layout="vertical" scrollToFirstError>
                         <Form.Item
                             name="name"
-                            rules={[{ required: true, message: 'Please enter your name!' }]}>
-                            <Input placeholder="Full Name" size="large" />
+                            rules={[{ required: true, message: 'Vui lòng nhập họ và tên của bạn!' }]}>
+                            <Input placeholder="Họ và Tên" size="large" />
                         </Form.Item>
 
                         <Form.Item
                             name="phone"
-                            rules={[{ required: true, message: 'Please enter your phone number!' }]}>
-                            <Input placeholder="Phone Number" size="large" />
+                            rules={[{ required: true, message: 'Vui lòng nhập số điện thoại của bạn!' }]}>
+                            <Input placeholder="Số Điện Thoại" size="large" />
                         </Form.Item>
 
                         <Form.Item
                             name="num_people"
-                            rules={[{ required: true, message: 'Please enter the number of people!' }]}>
+                            rules={[{ required: true, message: 'Vui lòng nhập số lượng người!' }]}>
                             <InputNumber
                                 min={1}
-                                placeholder="Number of People"
+                                placeholder="Số Lượng Người"
                                 size="large"
                                 style={{ width: '100%' }}
                             />
@@ -100,24 +98,24 @@ const Reservation = () => {
 
                         <Form.Item
                             name="date"
-                            rules={[{ required: true, message: 'Please select a date and time!' }]}>
+                            rules={[{ required: true, message: 'Vui lòng chọn ngày và giờ!' }]}>
                             <DatePicker
                                 showTime
-                                placeholder="Select Date and Time"
+                                placeholder="Chọn Ngày và Giờ"
                                 size="large"
                                 style={{ width: '100%' }}
                             />
                         </Form.Item>
 
-                        {/* Choose Menu Items */}
-                        <h3>Choose Menu Items</h3>
+                        {/* Chọn Món Ăn */}
+                        <h3 className="font-semibold text-lg">Chọn Món Ăn</h3>
                         {items.map(item => (
                             <Form.Item key={item.id} label={item.name}>
                                 <Select
                                     defaultValue={0}
-                                    onChange={(value) => handleItemChange(item.id, value)} // Update selectedItems
+                                    onChange={(value) => handleItemChange(item.id, value)} // Cập nhật selectedItems
                                     size="large">
-                                    <Option value={0}>Not Selected</Option>
+                                    <Option value={0}>Chưa Chọn</Option>
                                     {[...Array(10).keys()].map(i => (
                                         <Option key={i + 1} value={i + 1}>{i + 1}</Option>
                                     ))}
@@ -130,8 +128,8 @@ const Reservation = () => {
                                 htmlType="submit"
                                 loading={loading}
                                 size="large"
-                                className="w-full">
-                                Make Reservation and Order
+                                className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 transition-all duration-300">
+                                Đặt Chỗ và Gọi Món
                             </Button>
                         </Form.Item>
                     </Form>

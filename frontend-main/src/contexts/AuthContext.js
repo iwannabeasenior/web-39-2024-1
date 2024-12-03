@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('accessToken', data.accessToken);
         localStorage.setItem('refreshToken', data.refreshToken);
         localStorage.setItem('user', JSON.stringify(data.username));
-        const decoded = jwtDecode(data.accessToken.split(' ')[1]);
+        const decoded = jwtDecode(data?.accessToken.split(' ')?.[1]);
         setUser(decoded);
     };
 
