@@ -2,12 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { Table, Button, Modal, Form, Input, Space, message, InputNumber, Upload } from 'antd';
 import { itemAPI } from "../../../services/apis/Item"; // Giả sử bạn có một API cho menu
 import { UploadOutlined } from '@ant-design/icons';
-import { supabase } from "../../../supabase/supasbase"; // Đảm bảo bạn đã cấu hình Supabase
+import { supabase } from "../../../supabase/supasbase";
+import {itemCategoryAPI} from "../../../services/apis/ItemCategory"; // Đảm bảo bạn đã cấu hình Supabase
+
 
 export default function ItemManagements() {
     const [menuItems, setMenuItems] = useState([]);
     const [error, setError] = useState(null);
     const [isModalVisible, setIsModalVisible] = useState(false);
+    const [isModalCategory,setIsModalCategory] = useState(false);
+    const [itemId, setItemId] = useState(null);
+
     const [form] = Form.useForm();
     const [editingItem, setEditingItem] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -68,6 +73,13 @@ export default function ItemManagements() {
                     >
                         Xóa
                     </Button>
+                    <Button
+                        type="link"
+                        onClick={() => handleAddCategory(record.id)}
+                        className="text-blue-600 hover:text-blue-800"
+                    >
+                        Thêm category
+                    </Button>
                 </Space>
             ),
         },
@@ -87,9 +99,14 @@ export default function ItemManagements() {
         setFileList([{ uid: '-1', name: record.image, status: 'done', url: record.image }]); // Set file list for editing
         setIsModalVisible(true);
     };
+    const handleAddCategory = (id) => {
+        setIsModalCategory(true);
+        setItemId(id);
+    };
 
     const handleDelete = async (record) => {
         try {
+
             await itemAPI.deleteItem(record); // Xóa món ăn
             setMenuItems(menuItems.filter(item => item.id !== record.id));
             message.success('Xóa món ăn thành công');
@@ -143,6 +160,25 @@ export default function ItemManagements() {
             setIsModalVisible(false);
             form.resetFields();
             setFileList([]); // Reset file list
+        } catch (error) {
+            console.error('Lỗi khi thêm/sửa món ăn:', error);
+            message.error('Có lỗi xảy ra. Vui lòng thử lại.');
+        }
+    };
+    const handleModalOkForAddCategory = async () => {
+        try {
+            const values = await form.validateFields();
+            const category=values?.category?.split(",");
+            console.log("check value",values);
+            const requestData = {
+                    itemId:itemId,
+                categories:category
+            };
+            await itemCategoryAPI.createItemCategory(requestData);
+            message.success('Cập nhật category thành công!');
+            setIsModalCategory(false);
+            form.resetFields();
+
         } catch (error) {
             console.error('Lỗi khi thêm/sửa món ăn:', error);
             message.error('Có lỗi xảy ra. Vui lòng thử lại.');
@@ -218,6 +254,30 @@ export default function ItemManagements() {
                         >
                             <Button icon={<UploadOutlined />} className="bg-blue-500 text-white rounded-md">Chọn ảnh</Button>
                         </Upload>
+                    </Form.Item>
+                </Form>
+            </Modal>
+            <Modal
+                title={"Thêm category"}
+                open={isModalCategory}
+                onOk={handleModalOkForAddCategory}
+                onCancel={() => {
+                    setIsModalCategory(false);
+                    form.resetFields();
+                }}
+                className="rounded-lg"
+            >
+                <Form
+                    form={form}
+                    layout="vertical"
+                    className="mt-4"
+                >
+                    <Form.Item
+                        name="category"
+                        label="Category"
+                        rules={[{ required: true, message: 'Vui lòng nhập category!' }]}
+                    >
+                        <Input placeholder="Nhập category" className="border rounded-md" />
                     </Form.Item>
                 </Form>
             </Modal>
