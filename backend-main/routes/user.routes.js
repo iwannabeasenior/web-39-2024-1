@@ -6,7 +6,13 @@ const authMiddware = require("../middlewares/auth.middleware.js");
 
 const router = express.Router();
 
-router.get("/", userController.getAllUsers);
+router.get("/all-users", userController.getAllUsers);
+
+router.get(
+  "/user-info",
+  authMiddware.authenticateToken,
+  userController.userInfo
+);
 
 router.post(
   "/signup",
@@ -21,8 +27,8 @@ router.post("/refresh-token", userController.refreshToken);
 
 router.post("/logout", authMiddware.authenticateToken, userController.logout);
 // Route to update user information (requires authentication)
-router.put(
-  "/update",
+router.patch(
+  "/update-user",
   authMiddware.authenticateToken,
   userController.updateUser
 );
@@ -33,5 +39,10 @@ router.delete(
   authMiddware.authenticateToken,
   userController.deleteUser
 );
+
+router.post(
+  "/sendOTP",
+  userController.sendOTP
+)
 
 module.exports = router;

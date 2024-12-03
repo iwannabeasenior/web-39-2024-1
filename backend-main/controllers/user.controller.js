@@ -3,10 +3,23 @@ const User = require("../models/user.model.js");
 require("dotenv").config();
 const userService = require("../services/user.service");
 const authUtil = require("../utils/auth.util");
+const { Auth, LoginCredentials } = require("two-step-auth");
 
 const getAllUsers = async (req, res) => {
   try {
     const users = await User.findAll();
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ error: "Error fetching users" });
+  }
+};
+
+const userInfo = async (req, res) => {
+  try {
+    const users = await User.findOne({
+      where: { username: req.user.username },
+      attributes: { exclude: ["refresh_token", "password"] }, // Loại bỏ refresh_token khỏi kết quả
+    });
     res.json(users);
   } catch (error) {
     res.status(500).json({ error: "Error fetching users" });
@@ -32,23 +45,24 @@ const signUp = async (req, res) => {
     return res.json({
       status: "SUCCESS",
       message: "Signup successful!",
-      data: newUser,
+      data: newUser.username,
     });
   } catch (error) {
     console.log(error);
-    res.json({
+    res.status(500).json({
       status: "FAILED",
-      message: "An error occurred during sign up!",
+      // message: "An error occurred during sign up!",
+      message: error,
     });
   }
 };
 
 const updateUser = async (req, res) => {
   try {
-    const { username, ...otherFields } = req.body; // Adjust as needed to accept relevant fields
+    const { ...otherFields } = req.body; // Adjust as needed to accept relevant fields
 
     // console.log(req.username)
-    console.log(otherFields);
+    // console.log(otherFields);
     if (!otherFields || Object.keys(otherFields).length === 0) {
       return res.status(400).send("No fields to update.");
     }
@@ -61,9 +75,6 @@ const updateUser = async (req, res) => {
     if (!updatedUser) {
       return res.status(404).send("User not found!");
     }
-
-    console.log(req.user);
-    console.log(req.body);
     res.json({
       status: "SUCCESS",
       message: "User updated successfully!",
@@ -79,19 +90,24 @@ const login = async (req, res) => {
   let { email, password } = req.body;
   // console.log(email);
   try {
-    const user = await userService.getUserByEmail(email);
+    const user = await User.findOne({
+      where: { email: email }
+    });
     // console.log(user);
 
     const isPasswordValid = await userService.validatePassword(
       password,
       user.password
     );
+
+    console.log(isPasswordValid);
     if (!isPasswordValid) {
       return res.status(401).send("Password incorrect!");
     }
 
     const dataForAccessToken = {
       username: user.username,
+      role: user.role,
       // Thêm các thông tin khác nếu cần
     };
 
@@ -128,15 +144,19 @@ const login = async (req, res) => {
     }
 
     res.json({
-      status: "SUCCESS",
+      success: true,
       message: "Login successful!",
-      username: `${user.username}`,
+      username: user.username,
       accessToken: `Bearer ${accessToken}`,
       refreshToken: `Bearer ${refreshToken}`,
     });
   } catch (error) {
     console.log(error);
-    return res.status(500).send("An error occurred during login!");
+    return res.status(401).json({
+      success: false,
+      status: "FAILED",
+      message: "Invalid email or password",
+    });
   }
 };
 
@@ -187,7 +207,10 @@ const refreshToken = async (req, res) => {
     );
 
     // Tạo data cho access token mới
-    const dataForAccessToken = { username: decoded.payload.username };
+    const dataForAccessToken = {
+      username: decoded.payload.username,
+      role: decoded.payload.role,
+    };
     // Thiết lập thời gian sống và secret cho access token
     const accessTokenLife = process.env.ACCESS_TOKEN_LIFE;
     const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET;
@@ -215,11 +238,13 @@ const deleteUser = async (req, res) => {
   try {
     // Verify the access token to ensure the user is authenticated
     const user = await userService.getUserByUserName(req.user.username);
+    console.log(req.user.username);
 
     const isPasswordValid = await userService.validatePassword(
       password,
       user.password
     );
+    console.log(isPasswordValid);
     if (!isPasswordValid) {
       return res.status(401).send("Password incorrect!");
     }
@@ -235,12 +260,47 @@ const deleteUser = async (req, res) => {
   }
 };
 
+const sendOTP = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // Validate the email format
+    if (!email || typeof email !== 'string' || !/\S+@\S+\.\S+/.test(email)) {
+      return res.status(400).json({ status: "Error", message: "Invalid email address" });
+    }
+
+    // Call the Auth function
+    const res1 = await Auth(email, "");
+
+    // Log essential details
+    console.log("OTP sent successfully:", {
+      email: res1.mail,
+      success: res1.success,
+    });
+
+    // Send success response
+    return res.status(200).json({
+      status: "Success",
+      message: "OTP sent successfully",
+    });
+  } catch (e) {
+    console.error("Error in sendOTP:", e);
+    return res.status(500).json({
+      status: "Error",
+      message: "Internal Server Error",
+    });
+  }
+};
+
+
 module.exports = {
   getAllUsers,
+  userInfo,
   signUp,
   login,
   refreshToken,
   logout,
   updateUser,
   deleteUser,
+  sendOTP
 };

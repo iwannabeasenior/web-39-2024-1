@@ -1,6 +1,6 @@
 const bcrypt = require("bcrypt");
 const { Op } = require("sequelize");
-const User = require("../models/user.model.js");
+const User = require("../models/user.model");
 
 async function isUserExists(criteria) {
   // Tạo mảng điều kiện `where` dựa trên các thuộc tính có trong `criteria`
@@ -46,13 +46,16 @@ async function createUser(userData) {
 }
 
 async function getUserByUserName(username) {
-  // console.log(User.findOne({ where: { username: username } }));
-  return await User.findOne({ where: { username: username } });
+  return await User.findOne({
+    where: { username: username }, // Loại bỏ refresh_token khỏi kết quả
+  });
 }
 
 async function getUserByEmail(email) {
   // console.log(User.findOne({ where: { email: email } }));
-  return await User.findOne({ where: { email: email } });
+  return await User.findOne({
+    where: { email: email },
+  });
 }
 
 async function validatePassword(password, hashedPassword) {

@@ -23,11 +23,21 @@ module.exports = function(sequelize, DataTypes) {
         key: 'id'
       }
     },
-    last_message_id: {
-      type: DataTypes.INTEGER,
+    last_message: {
+      type: DataTypes.STRING(255),
       allowNull: false
+    },
+    updated_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP')
     }
-  }, {
+    // last_message_id: {
+    //   type: DataTypes.INTEGER,
+    //   allowNull: false
+    // }
+  }, 
+  {
     sequelize,
     tableName: 'conversation',
     timestamps: false,
