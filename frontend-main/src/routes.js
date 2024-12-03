@@ -18,7 +18,6 @@ import Header from "../src/components/HomePage/header"
 import Contact from './Features/Contact/Contact';
 import OrderManagements from "./Features/Admin/pages/OrderManagement";
 import ContactManagement from "./Features/Admin/pages/ContactManagement";
-import MyOrder from "./Features/Profile/Myorder/MyOrder";
 
 
 
@@ -46,12 +45,13 @@ const AppRoutes = () => {
                     <Route path="/contact" element={<Contact/>} />
 
                     {/* Protected Profile Route */}
-
-                    <Route path="/orders" element={
+                    <Route path="/profile" element={
                         <ProtectedRoute>
-                            <MyOrder/>
+                            <Profile/>
+
                         </ProtectedRoute>
                     } />
+
 
                     {/* Admin Routes */}
                     <Route path="/admin" element={

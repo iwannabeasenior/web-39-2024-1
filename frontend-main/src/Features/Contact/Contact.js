@@ -1,12 +1,8 @@
 import React, { useState } from 'react';
 import { Form, Input, Button, Card } from 'antd';
 import { UserOutlined, MailOutlined, PhoneOutlined } from '@ant-design/icons';
-<<<<<<< HEAD
-import {contactAPI} from "../../services/apis/Contact";
 
-=======
 import { contactAPI } from '../../services/apis/Contact';
->>>>>>> 852d27a68d9295699f2329b0909ddc57028f4ad8
 
 export default function Contact() {
     const [loading, setLoading] = useState(false);

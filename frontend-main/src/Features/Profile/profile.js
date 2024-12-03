@@ -102,6 +102,7 @@ export default function Profile() {
             setProfile(null);
             setIsDeleteModalVisible(false);
             message.success("Xóa hồ sơ thành công!");
+            window.location.reload();
 
         } catch (error) {
             console.error('Lỗi khi xóa hồ sơ:', error);

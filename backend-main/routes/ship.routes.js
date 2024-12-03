@@ -28,7 +28,7 @@ router.post('/create', authMiddleware.authenticateToken, orderController.createS
 router.put('/update-status/', authMiddleware.authenticateToken, orderController.updateOrder); // hủy đơn hàng
 
 
-router.get('/get', auth)
+// router.get('/get', auth)
 // Cập nhật trạng thái info người dùng của đơn hàng, tạm thời bỏ qua
 // router.put('/update-user-info/:orderId', authMiddleware.authenticateToken, orderUserInfoController.updateInfo);
 
