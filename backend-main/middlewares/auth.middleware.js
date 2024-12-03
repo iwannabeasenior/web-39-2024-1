@@ -3,6 +3,8 @@ const express = require("express");
 const app = express();
 const authUtil = require("../utils/auth.util");
 const User = require("../models/user.model");
+const { Auth, LoginCredentials } = require("two-step-auth");
+
 app.use(express.json());
 
 async function authenticateToken(req, res, next) {
@@ -62,6 +64,7 @@ async function adminRoleAuth(req, res, next) {
     });
   }
 }
+
 
 module.exports = {
   authenticateToken,

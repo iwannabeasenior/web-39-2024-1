@@ -35,6 +35,14 @@ const OrderDetail = sequelize.define('OrderDetail', {
     type: DataTypes.ENUM('pending', 'confirmed', 'canceled', 'out_of_seats'),
     defaultValue: 'pending',
   },
+  star: {
+    type: DataTypes.INTEGER,
+    allowNull: true
+  },
+  comment: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  }
 }, {
   tableName: 'order_detail',
   timestamps: false,
