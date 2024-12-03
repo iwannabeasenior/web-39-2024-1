@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Form, Input, Button, Card, DatePicker, message, Select, InputNumber } from 'antd';
 import { itemAPI } from '../../services/apis/Item'; // API to fetch menu items
 import { reservationAPI } from '../../services/apis/Reservation'; // API to create reservations
+import { useLocation } from 'react-router-dom'; // Dùng useLocation để lấy giỏ hàng
 
 const { Option } = Select;
 
@@ -9,6 +10,8 @@ const Reservation = () => {
     const [loading, setLoading] = useState(false);
     const [items, setItems] = useState([]);
     const [selectedItems, setSelectedItems] = useState({});
+    const location = useLocation(); // Lấy location từ react-router-dom
+    const cart = location.state?.cart || []; // Giỏ hàng được truyền từ trang MenuItems
 
     useEffect(() => {
         const fetchItems = async () => {
@@ -22,6 +25,15 @@ const Reservation = () => {
 
         fetchItems();
     }, []);
+
+    // Hàm để cập nhật món ăn trong giỏ hàng
+    useEffect(() => {
+        const initialSelectedItems = {};
+        cart.forEach(item => {
+            initialSelectedItems[item.id] = item.quantity; // Lấy số lượng từ giỏ hàng
+        });
+        setSelectedItems(initialSelectedItems); // Cập nhật lại selectedItems
+    }, [cart]);
 
     const handleItemChange = (itemId, quantity) => {
         setSelectedItems(prev => ({
@@ -75,19 +87,19 @@ const Reservation = () => {
                     <Form onFinish={handleSubmit} layout="vertical" scrollToFirstError>
                         <Form.Item
                             name="name"
-                            rules={[{ required: true, message: 'Vui lòng nhập họ và tên của bạn!' }]}>
+                            rules={[{ required: true, message: 'Vui lòng nhập họ và tên của bạn!' }]} >
                             <Input placeholder="Họ và Tên" size="large" />
                         </Form.Item>
 
                         <Form.Item
                             name="phone"
-                            rules={[{ required: true, message: 'Vui lòng nhập số điện thoại của bạn!' }]}>
+                            rules={[{ required: true, message: 'Vui lòng nhập số điện thoại của bạn!' }]} >
                             <Input placeholder="Số Điện Thoại" size="large" />
                         </Form.Item>
 
                         <Form.Item
                             name="num_people"
-                            rules={[{ required: true, message: 'Vui lòng nhập số lượng người!' }]}>
+                            rules={[{ required: true, message: 'Vui lòng nhập số lượng người!' }]} >
                             <InputNumber
                                 min={1}
                                 placeholder="Số Lượng Người"
@@ -98,7 +110,7 @@ const Reservation = () => {
 
                         <Form.Item
                             name="date"
-                            rules={[{ required: true, message: 'Vui lòng chọn ngày và giờ!' }]}>
+                            rules={[{ required: true, message: 'Vui lòng chọn ngày và giờ!' }]} >
                             <DatePicker
                                 showTime
                                 placeholder="Chọn Ngày và Giờ"
@@ -112,7 +124,7 @@ const Reservation = () => {
                         {items.map(item => (
                             <Form.Item key={item.id} label={item.name}>
                                 <Select
-                                    defaultValue={0}
+                                    value={selectedItems[item.id] || 0} // Sử dụng giá trị từ selectedItems
                                     onChange={(value) => handleItemChange(item.id, value)} // Cập nhật selectedItems
                                     size="large">
                                     <Option value={0}>Chưa Chọn</Option>
@@ -122,6 +134,7 @@ const Reservation = () => {
                                 </Select>
                             </Form.Item>
                         ))}
+
                         <Form.Item>
                             <Button
                                 type="primary"

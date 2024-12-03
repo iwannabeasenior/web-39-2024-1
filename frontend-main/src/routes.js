@@ -17,8 +17,8 @@ import UserManagement from "./Features/Admin/pages/UserManagement";
 import Header from "../src/components/HomePage/header"
 import Contact from './Features/Contact/Contact';
 import OrderManagements from "./Features/Admin/pages/OrderManagement";
-
-
+import ShipOrder from "./Features/ShipOrder/ShipOrder";
+import OrderHistory from './Features/OrderHistory/OrderHistory';
 
 
 const AppRoutes = () => {
@@ -41,7 +41,9 @@ const AppRoutes = () => {
                     <Route path="/menu" element={<Menu />} />
                     <Route path="/unauthorized" element={<BanKhongPhaiLaAdmin />} />
                     <Route path="/contact" element={<Contact/>} />
-
+                    <Route path="/ship" element={<ShipOrder />} />
+                    <Route path="/orders" element={<OrderHistory />} />
+                    
                     {/* Protected Profile Route */}
                     <Route path="/profile" element={
                         <ProtectedRoute>
