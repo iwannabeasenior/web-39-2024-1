@@ -38,7 +38,6 @@ export default function MenuItems() {
 
     useEffect(() => {
         fetchData();
-        fetchCategory();
     }, []);
 
     const filteredItems = selectedCategory === 'all'

@@ -17,15 +17,12 @@ import UserManagement from "./Features/Admin/pages/UserManagement";
 import Header from "../src/components/HomePage/header"
 import Contact from './Features/Contact/Contact';
 import OrderManagements from "./Features/Admin/pages/OrderManagement";
-<<<<<<< HEAD
 import ShipOrder from "./Features/ShipOrder/ShipOrder";
 import OrderHistory from './Features/OrderHistory/OrderHistory';
-=======
 import ContactManagement from "./Features/Admin/pages/ContactManagement";
 
 
 
->>>>>>> cf8cf099cec9f46b2deeb6f421115a0ffd97d306
 
 
 const AppRoutes = () => {
@@ -50,15 +47,14 @@ const AppRoutes = () => {
                     <Route path="/contact" element={<Contact/>} />
                     <Route path="/ship" element={<ShipOrder />} />
                     <Route path="/orders" element={<OrderHistory />} />
-                    
+
                     {/* Protected Profile Route */}
+
                     <Route path="/profile" element={
                         <ProtectedRoute>
                             <Profile/>
-
                         </ProtectedRoute>
                     } />
-
 
                     {/* Admin Routes */}
                     <Route path="/admin" element={
