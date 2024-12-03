@@ -25,7 +25,7 @@ const authMiddleware = require('../middlewares/auth.middleware');
 router.post('/create', authMiddleware.authenticateToken, orderController.createShipOrder); // tạo đơn hàng với menu order và thông tin người dùng, status là confirmed, nếu trong vòng 10p người dùng hủy thì có thể hủy
 
 // Cập nhật trạng thái đơn hàng
-router.put('/update-status/:orderId', authMiddleware.authenticateToken, orderController.updateOrder); // hủy đơn hàng
+router.put('/update-status/', authMiddleware.authenticateToken, orderController.updateOrder); // hủy đơn hàng
 
 // Cập nhật trạng thái info người dùng của đơn hàng, tạm thời bỏ qua
 // router.put('/update-user-info/:orderId', authMiddleware.authenticateToken, orderUserInfoController.updateInfo);

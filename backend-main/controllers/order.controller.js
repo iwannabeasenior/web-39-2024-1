@@ -122,7 +122,8 @@ const createOrder = async (req, res) => {
 
 const updateOrder = async (req, res) => {
   try {
-    const { id, status, ...otherFields } = req.body; // Adjust as needed to accept relevant fields
+    const { id, ...otherFields } = req.body; // Adjust as needed to accept relevant fields
+    const {status} = req.body;
     if (!id) {
       return res.status(400).send("Order number required.");
     }
@@ -130,7 +131,7 @@ const updateOrder = async (req, res) => {
       return res.status(400).send("No fields to update.");
     }
     // Update the user information in the database
-    const updatedOrder = await orderService.updateOrder(id, status, {
+    const updatedOrder = await orderService.updateOrder(id, {
       ...otherFields, // Spread other fields if there are additional updates
     });
 
@@ -152,17 +153,17 @@ const updateEvaluate = async (req, res) => {
   try { 
     const orderId = req.params.orderId;
     const {star, comment} = req.body;
-    if (!orderId) { 
-      res.status(400).send("Order not found");
+    const updatedOrder = await orderService.updateOrder(orderId, {star, comment});
+    if (!updatedOrder) {
+      return res.status(404).send("Order not found");
     }
-    const updatedOrder = await orderService.updateOrder(orderId, null, {star, comment});
-    res.status(200).json({
+    return res.status(200).json({
       status: "SUCCESS",
       updatedOrder
     });
   } catch(e) { 
     console.log(e);
-    res.status(500).json({error: "Error when update evaluate"});
+    return res.status(500).json({error: "Error when update evaluate"});
   }
 };
 
