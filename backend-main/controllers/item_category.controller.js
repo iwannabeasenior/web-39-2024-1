@@ -1,5 +1,5 @@
 const ItemCategory = require("../models/item_category.model");
-const Item = require("../models/item.model")
+const Item = require("../models/item.model");
 // const itemCategoryService = require("../services/itemCategory.service");
 
 const getAllItemCategory = async (req, res) => {
@@ -74,10 +74,10 @@ const createItemCategory = async (req, res) => {
 
   try {
     // Tạo mảng đối tượng để tạo nhiều ItemCategory
-    const newItemCategories = categories.map(category => ({
-      itemId: itemId,  // Gán itemId vào từng ItemCategory
-      category: category.category,  // Gán category từ đối tượng trong mảng
-      ...otherFields,  // Nếu có thêm các trường khác trong body
+    const newItemCategories = categories.map((category) => ({
+      itemId: itemId, // Gán itemId vào từng ItemCategory
+      category: category.category, // Gán category từ đối tượng trong mảng
+      ...otherFields, // Nếu có thêm các trường khác trong body
     }));
 
     // Sử dụng bulkCreate để thêm nhiều bản ghi vào bảng ItemCategory
@@ -99,7 +99,7 @@ const createItemCategory = async (req, res) => {
 };
 
 const getItemsByCategory = async (req, res) => {
-  const { category } = req.body;  // Lấy category từ body của yêu cầu
+  const { category } = req.body; // Lấy category từ body của yêu cầu
 
   // Kiểm tra xem category có được cung cấp không
   if (!category) {
@@ -113,7 +113,7 @@ const getItemsByCategory = async (req, res) => {
     // Tìm các itemId có liên kết với category cụ thể trong ItemCategory
     const itemCategories = await ItemCategory.findAll({
       where: { category },
-      attributes: ['itemId'], // Chỉ lấy itemId từ ItemCategory
+      attributes: ["itemId"], // Chỉ lấy itemId từ ItemCategory
     });
 
     if (!itemCategories || itemCategories.length === 0) {
@@ -124,7 +124,7 @@ const getItemsByCategory = async (req, res) => {
     }
 
     // Tạo danh sách itemId từ kết quả ItemCategory
-    const itemIds = itemCategories.map(itemCategory => itemCategory.itemId);
+    const itemIds = itemCategories.map((itemCategory) => itemCategory.itemId);
 
     // Tìm các Item tương ứng với itemId đã tìm thấy
     const items = await Item.findAll({

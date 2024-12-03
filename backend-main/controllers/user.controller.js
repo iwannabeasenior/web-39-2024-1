@@ -45,7 +45,7 @@ const signUp = async (req, res) => {
     return res.json({
       status: "SUCCESS",
       message: "Signup successful!",
-      data: newUser,
+      data: newUser.username,
     });
   } catch (error) {
     console.log(error);
@@ -90,7 +90,9 @@ const login = async (req, res) => {
   let { email, password } = req.body;
   // console.log(email);
   try {
-    const user = await userService.getUserByEmail(email);
+    const user = await User.findOne({
+      where: { email: email }
+    });
     // console.log(user);
 
     const isPasswordValid = await userService.validatePassword(

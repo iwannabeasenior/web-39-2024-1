@@ -46,12 +46,7 @@ const AppRoutes = () => {
                     <Route path="/contact" element={<Contact/>} />
 
                     {/* Protected Profile Route */}
-                    <Route path="/profile" element={
-                        <ProtectedRoute>
-                            <Profile/>
 
-                        </ProtectedRoute>
-                    } />
                     <Route path="/orders" element={
                         <ProtectedRoute>
                             <MyOrder/>
