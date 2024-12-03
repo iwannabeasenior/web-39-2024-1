@@ -148,6 +148,23 @@ const updateOrder = async (req, res) => {
   }
 };
 
+const updateEvaluate = async (req, res) => { 
+  try { 
+    const orderId = req.params.orderId;
+    const {star, comment} = req.body;
+    if (!orderId) { 
+      res.status(400).send("Order not found");
+    }
+    const updatedOrder = await orderService.updateOrder(orderId, null, {star, comment});
+    res.status(200).json({
+      status: "SUCCESS",
+      updatedOrder
+    });
+  } catch(e) { 
+    console.log(e);
+    res.status(500).json({error: "Error when update evaluate"});
+  }
+};
 
 const createShipOrder = async (req, res) => {
   try { 
@@ -186,5 +203,6 @@ module.exports = {
   getAllOrders,
   createOrder,
   updateOrder,
-  createShipOrder
+  createShipOrder,
+  updateEvaluate
 };

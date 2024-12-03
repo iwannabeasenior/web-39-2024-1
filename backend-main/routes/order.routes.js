@@ -14,6 +14,7 @@ router.get("/", orderController.getAllOrders);
 
 router.post("/create-order", orderController.createOrder);
 
+router.post("/update-evaluate/:orderId", orderController.updateEvaluate);
 // router.patch("/update-reservation", orderController.updateOrder);
 
 // router.delete("/delete-reservation", orderController.deleteOrder);
