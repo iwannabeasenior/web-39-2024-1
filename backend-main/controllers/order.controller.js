@@ -2,6 +2,7 @@ const OrderDetail = require("../models/order_detail.model");
 const orderService = require("../services/order.service");
 const userService = require("../services/user.service");
 const sequelize = require("../config/db.config"); // Đảm bảo import sequelize để sử dụng transaction
+const { createOrderUserInfo } = require("../services/order_user_info.service");
 
 const getAllOrders = async (req, res) => {
   try {
@@ -121,15 +122,15 @@ const createOrder = async (req, res) => {
 
 const updateOrder = async (req, res) => {
   try {
-    const { id, ...otherFields } = req.body; // Adjust as needed to accept relevant fields
+    const { id, status, ...otherFields } = req.body; // Adjust as needed to accept relevant fields
     if (!id) {
       return res.status(400).send("Order number required.");
     }
-    if (!otherFields || Object.keys(otherFields).length === 0) {
+    if (!otherFields || Object.keys(otherFields).length === 0 && !status) {
       return res.status(400).send("No fields to update.");
     }
     // Update the user information in the database
-    const updatedOrder = await orderService.updateOrder(id, {
+    const updatedOrder = await orderService.updateOrder(id, status, {
       ...otherFields, // Spread other fields if there are additional updates
     });
 
@@ -142,7 +143,42 @@ const updateOrder = async (req, res) => {
       Order: updatedOrder,
     });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: "Error updating order" });
+  }
+};
+
+
+const createShipOrder = async (req, res) => {
+  try { 
+    const {userInfo, status, type, orderItems} = req.body;
+    const customerId = req.user.id;
+    // create order_detail for ship
+    const newOrder = await orderService.createOrder({status, type, 'customer_id': customerId});
+    try {
+      // create orderuserinfo
+      await createOrderUserInfo({...userInfo, 'order_detail_id': customerId});
+      //create itemOrders
+      await orderService.createItemOrders(orderItems.map( (item) => (
+        {
+          'item_id': item.item_id,
+          'customer_id': customerId,
+          'quantity': item.quantity,
+          'order_id': newOrder.id
+        })
+      ));
+    } catch(error) {
+      newOrder.destroy();
+      res.status(500).json({ error: "Error happend when create ship order 1"});
+    }
+    res.json({
+      status: "Success",
+      message: "Create ship order successfully",
+      data: newOrder
+    });
+  } catch(e) {
+      console.log(e);
+      res.status(500).json({ error: "Error happend when create ship order 2"});
   }
 };
 
@@ -150,4 +186,5 @@ module.exports = {
   getAllOrders,
   createOrder,
   updateOrder,
+  createShipOrder
 };
