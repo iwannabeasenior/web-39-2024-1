@@ -190,13 +190,13 @@ async function createItemOrders(itemOrders, { transaction} = {}) {
     throw new Error("Error saving item orders");
   }
 }
-async function updateOrder(id, status, data) { 
+async function updateOrder(id, data) { 
   try { 
     const order = await OrderDetail.findOne({ where: { id } });
     if (!order) {
       return null;
     }
-    const newOrder = Object.assign(order, {id, status, ...data});
+    const newOrder = Object.assign(order, {id, ...data});
     await newOrder.save();
     return newOrder;
   } catch(e) { 

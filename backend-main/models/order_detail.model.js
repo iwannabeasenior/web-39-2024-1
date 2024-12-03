@@ -40,7 +40,7 @@ const OrderDetail = sequelize.define('OrderDetail', {
     allowNull: true
   },
   comment: {
-    type: DataTypes.TEXT,
+    type: DataTypes.STRING(255),
     allowNull: true
   }
 }, {
