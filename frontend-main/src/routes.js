@@ -15,7 +15,7 @@ import TableManagement from "./Features/Admin/pages/TableManagements";
 import ItemManagements from "./Features/Admin/pages/ItemManagements";
 import UserManagement from "./Features/Admin/pages/UserManagement";
 import Header from "../src/components/HomePage/header"
-
+import Contact from './Features/Contact/Contact';
 
 
 
@@ -38,6 +38,7 @@ const AppRoutes = () => {
                     <Route path="/register" element={<Register />} />
                     <Route path="/menu" element={<Menu />} />
                     <Route path="/unauthorized" element={<BanKhongPhaiLaAdmin />} />
+                    <Route path="/contact" element={<Contact/>} />
 
                     {/* Protected Profile Route */}
                     <Route path="/profile" element={
