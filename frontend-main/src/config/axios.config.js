@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const axiosInstance = axios.create({
-    baseURL: 'http://localhost:8080', // Thay đổi baseURL theo API của bạn
+    baseURL: 'https://be-test01.onrender.com', // Thay đổi baseURL theo API của bạn
     timeout: 10000,
     headers: {
         'Content-Type': 'application/json'
